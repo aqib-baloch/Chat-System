@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  app:
+    build: ./docker/php
+    container_name: chat_app
+    environment:
+      APP_DEBUG: "1"
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www
+    depends_on:
+      - mongo
+
+  nginx:
+    image: nginx:alpine
+    container_name: chat_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  mongo:
+    image: mongo:8
+    container_name: chat_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

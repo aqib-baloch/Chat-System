@@ -1,0 +1,21 @@
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+
+# PHP / Composer
+vendor/
+
+# Node / Frontend tooling
+frontend/node_modules/
+frontend/.parcel-cache/
+frontend/dist/
+
+# Logs / Runtime storage
+storage/logs/
+storage/tmp_uploads/
+
+# Environment / Secrets
+.env
+.env.*
+
