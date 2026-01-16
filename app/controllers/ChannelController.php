@@ -18,19 +18,21 @@ final class ChannelController
         $this->channelService = $channelService;
     }
 
-    public function create(ObjectId $userId, array $body): void
+    public function create(ObjectId $userId, string $workspaceId, array $body): void
     {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
         $name = Validator::channelName(Validator::requireString($body, 'name'));
-        $description = Validator::optionalString($body, 'description', '');
-        $visibility = Validator::channelVisibility(Validator::optionalString($body, 'visibility', Validator::optionalString($body, 'type', 'public')));
+        $description = Validator::channelDescription(Validator::requireString($body, 'description'));
+        $visibility = Validator::channelVisibility(Validator::requireString($body, 'visibility'));
 
-        $channel = $this->channelService->createChannel($name, $description, $visibility, $userId);
+        $channel = $this->channelService->createChannel($workspaceObjectId, $name, $description, $visibility, $userId);
 
         Response::json([
             'success' => true,
             'message' => 'Channel created successfully',
             'channel' => [
                 'id' => (string)$channel->getId(),
+                'workspace_id' => (string)$channel->getWorkspaceId(),
                 'name' => $channel->getName(),
                 'description' => $channel->getDescription(),
                 'visibility' => $channel->getType(),
@@ -40,13 +42,15 @@ final class ChannelController
         ], 201);
     }
 
-    public function getAll(ObjectId $userId): void
+    public function getAll(ObjectId $userId, string $workspaceId): void
     {
-        $channels = $this->channelService->getUserChannels($userId);
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
+        $channels = $this->channelService->getUserChannels($workspaceObjectId, $userId);
 
         $channelData = array_map(function ($channel) {
             return [
                 'id' => (string)$channel->getId(),
+                'workspace_id' => (string)$channel->getWorkspaceId(),
                 'name' => $channel->getName(),
                 'description' => $channel->getDescription(),
                 'visibility' => $channel->getType(),
@@ -62,13 +66,15 @@ final class ChannelController
         ]);
     }
 
-    public function getPublic(): void
+    public function getPublic(ObjectId $userId, string $workspaceId): void
     {
-        $channels = $this->channelService->getPublicChannels();
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
+        $channels = $this->channelService->getPublicChannels($workspaceObjectId, $userId);
 
         $channelData = array_map(function ($channel) {
             return [
                 'id' => (string)$channel->getId(),
+                'workspace_id' => (string)$channel->getWorkspaceId(),
                 'name' => $channel->getName(),
                 'description' => $channel->getDescription(),
                 'visibility' => $channel->getType(),
@@ -84,11 +90,12 @@ final class ChannelController
         ]);
     }
 
-    public function getById(ObjectId $userId, string $channelId): void
+    public function getById(ObjectId $userId, string $workspaceId, string $channelId): void
     {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
         $channelObjectId = Validator::objectId($channelId, 'channel_id');
 
-        $channel = $this->channelService->getChannel($channelObjectId, $userId);
+        $channel = $this->channelService->getChannel($workspaceObjectId, $channelObjectId, $userId);
         if (!$channel) {
             throw new HttpException(404, 'Channel not found');
         }
@@ -97,6 +104,7 @@ final class ChannelController
             'success' => true,
             'channel' => [
                 'id' => (string)$channel->getId(),
+                'workspace_id' => (string)$channel->getWorkspaceId(),
                 'name' => $channel->getName(),
                 'description' => $channel->getDescription(),
                 'visibility' => $channel->getType(),
@@ -107,20 +115,27 @@ final class ChannelController
         ]);
     }
 
-    public function update(ObjectId $userId, string $channelId, array $body): void
+    public function update(ObjectId $userId, string $workspaceId, string $channelId, array $body): void
     {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
         $channelObjectId = Validator::objectId($channelId, 'channel_id');
 
-        $name = Validator::channelName(Validator::requireString($body, 'name'));
-        $description = Validator::optionalString($body, 'description', '');
+        $existing = $this->channelService->getChannel($workspaceObjectId, $channelObjectId, $userId);
+        if (!$existing) {
+            throw new HttpException(404, 'Channel not found');
+        }
 
-        $channel = $this->channelService->updateChannel($channelObjectId, $name, $description, $userId);
+        $name = Validator::channelName(Validator::optionalString($body, 'name', $existing->getName()));
+        $description = Validator::channelDescription(Validator::optionalString($body, 'description', $existing->getDescription()));
+
+        $channel = $this->channelService->updateChannel($workspaceObjectId, $channelObjectId, $name, $description, $userId);
 
         Response::json([
             'success' => true,
             'message' => 'Channel updated successfully',
             'channel' => [
                 'id' => (string)$channel->getId(),
+                'workspace_id' => (string)$channel->getWorkspaceId(),
                 'name' => $channel->getName(),
                 'description' => $channel->getDescription(),
                 'visibility' => $channel->getType(),
@@ -131,11 +146,12 @@ final class ChannelController
         ]);
     }
 
-    public function delete(ObjectId $userId, string $channelId): void
+    public function delete(ObjectId $userId, string $workspaceId, string $channelId): void
     {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
         $channelObjectId = Validator::objectId($channelId, 'channel_id');
 
-        $deleted = $this->channelService->deleteChannel($channelObjectId, $userId);
+        $deleted = $this->channelService->deleteChannel($workspaceObjectId, $channelObjectId, $userId);
 
         if ($deleted) {
             Response::json([

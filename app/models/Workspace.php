@@ -6,53 +6,37 @@ namespace App\Models;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 
-final class Channel
+final class Workspace
 {
-    public const TYPE_PUBLIC = 'public';
-    public const TYPE_PRIVATE = 'private';
-
     private ?ObjectId $id;
-    private ObjectId $workspaceId;
     private string $name;
     private string $description;
-    private string $type; // 'public' or 'private'
     private ObjectId $createdBy;
     private \DateTime $createdAt;
     private ?\DateTime $updatedAt;
 
     public function __construct(
         ?ObjectId $id,
-        ObjectId $workspaceId,
         string $name,
         string $description,
-        string $type,
         ObjectId $createdBy,
         \DateTime $createdAt,
         ?\DateTime $updatedAt = null
     ) {
         $this->id = $id;
-        $this->workspaceId = $workspaceId;
         $this->name = trim($name);
         $this->description = trim($description);
-        $this->type = $type;
         $this->createdBy = $createdBy;
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
     }
 
-    public static function createNew(
-        ObjectId $workspaceId,
-        string $name,
-        string $description,
-        string $type,
-        ObjectId $createdBy
-    ): self {
+    public static function createNew(string $name, string $description, ObjectId $createdBy): self
+    {
         return new self(
             null,
-            $workspaceId,
             $name,
             $description,
-            $type,
             $createdBy,
             new \DateTime('now', new \DateTimeZone('UTC')),
             null
@@ -64,11 +48,6 @@ final class Channel
         return $this->id;
     }
 
-    public function getWorkspaceId(): ObjectId
-    {
-        return $this->workspaceId;
-    }
-
     public function getName(): string
     {
         return $this->name;
@@ -77,21 +56,6 @@ final class Channel
     public function getDescription(): string
     {
         return $this->description;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->type === self::TYPE_PUBLIC;
-    }
-
-    public function isPrivate(): bool
-    {
-        return $this->type === self::TYPE_PRIVATE;
     }
 
     public function getCreatedBy(): ObjectId
@@ -116,6 +80,26 @@ final class Channel
         $this->updatedAt = new \DateTime('now', new \DateTimeZone('UTC'));
     }
 
+    public function toArray(): array
+    {
+        $array = [
+            'name' => $this->name,
+            'description' => $this->description,
+            'created_by' => $this->createdBy,
+            'created_at' => new UTCDateTime($this->createdAt),
+        ];
+
+        if ($this->updatedAt) {
+            $array['updated_at'] = new UTCDateTime($this->updatedAt);
+        }
+
+        if ($this->id) {
+            $array['_id'] = $this->id;
+        }
+
+        return $array;
+    }
+
     public static function fromArray(array $data): self
     {
         $createdAtData = $data['created_at'] ?? null;
@@ -138,35 +122,12 @@ final class Channel
 
         return new self(
             $data['_id'] ?? null,
-            $data['workspace_id'],
-            $data['name'],
-            $data['description'],
-            $data['type'],
+            (string)($data['name'] ?? ''),
+            (string)($data['description'] ?? ''),
             $data['created_by'],
             $createdAt,
             $updatedAt
         );
     }
-
-    public function toArray(): array
-    {
-        $array = [
-            'workspace_id' => $this->workspaceId,
-            'name' => $this->name,
-            'description' => $this->description,
-            'type' => $this->type,
-            'created_by' => $this->createdBy,
-            'created_at' => new UTCDateTime($this->createdAt),
-        ];
-
-        if ($this->updatedAt) {
-            $array['updated_at'] = new UTCDateTime($this->updatedAt);
-        }
-
-        if ($this->id) {
-            $array['_id'] = $this->id;
-        }
-
-        return $array;
-    }
 }
+

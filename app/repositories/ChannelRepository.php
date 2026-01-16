@@ -19,7 +19,8 @@ final class ChannelRepository
 
     public function ensureIndexes(): void
     {
-        $this->channels->createIndex(['name' => 1], ['unique' => true]);
+        $this->channels->createIndex(['workspace_id' => 1, 'name' => 1], ['unique' => true]);
+        $this->channels->createIndex(['workspace_id' => 1]);
         $this->channels->createIndex(['created_by' => 1]);
         $this->channels->createIndex(['type' => 1]);
     }
@@ -34,9 +35,9 @@ final class ChannelRepository
         return Channel::fromArray($data->getArrayCopy());
     }
 
-    public function findByName(string $name): ?Channel
+    public function findByName(ObjectId $workspaceId, string $name): ?Channel
     {
-        $data = $this->channels->findOne(['name' => trim($name)]);
+        $data = $this->channels->findOne(['workspace_id' => $workspaceId, 'name' => trim($name)]);
         if (!$data) {
             return null;
         }
@@ -44,9 +45,12 @@ final class ChannelRepository
         return Channel::fromArray($data->getArrayCopy());
     }
 
-    public function findPublicChannels(): array
+    public function findPublicChannels(ObjectId $workspaceId): array
     {
-        $cursor = $this->channels->find(['type' => Channel::TYPE_PUBLIC]);
+        $cursor = $this->channels->find([
+            'workspace_id' => $workspaceId,
+            'type' => Channel::TYPE_PUBLIC,
+        ]);
         $channels = [];
 
         foreach ($cursor as $data) {
@@ -56,9 +60,9 @@ final class ChannelRepository
         return $channels;
     }
 
-    public function findByCreator(ObjectId $creatorId): array
+    public function findByCreator(ObjectId $workspaceId, ObjectId $creatorId): array
     {
-        $cursor = $this->channels->find(['created_by' => $creatorId]);
+        $cursor = $this->channels->find(['workspace_id' => $workspaceId, 'created_by' => $creatorId]);
         $channels = [];
 
         foreach ($cursor as $data) {
@@ -68,10 +72,11 @@ final class ChannelRepository
         return $channels;
     }
 
-    public function findAccessibleChannels(ObjectId $userId): array
+    public function findAccessibleChannels(ObjectId $workspaceId, ObjectId $userId): array
     {
         // Public channels + channels created by the user
         $cursor = $this->channels->find([
+            'workspace_id' => $workspaceId,
             '$or' => [
                 ['type' => Channel::TYPE_PUBLIC],
                 ['created_by' => $userId]
@@ -94,6 +99,7 @@ final class ChannelRepository
 
         return new Channel(
             $id,
+            $channel->getWorkspaceId(),
             $channel->getName(),
             $channel->getDescription(),
             $channel->getType(),

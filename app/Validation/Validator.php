@@ -86,9 +86,36 @@ final class Validator
         if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
             throw new HttpException(422, 'Channel name must be between 2 and 50 characters');
         }
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
-            throw new HttpException(422, 'Channel name can only contain letters, numbers, underscores, and hyphens');
+        if (!preg_match('/^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$/', $name)) {
+            throw new HttpException(422, 'Channel name can only contain letters, numbers, spaces, underscores, and hyphens');
         }
         return $name;
+    }
+
+    public static function channelDescription(string $description): string
+    {
+        $description = trim($description);
+        if (mb_strlen($description) < 2 || mb_strlen($description) > 500) {
+            throw new HttpException(422, 'Channel description must be between 2 and 500 characters');
+        }
+        return $description;
+    }
+
+    public static function workspaceName(string $name): string
+    {
+        $name = trim($name);
+        if (mb_strlen($name) < 2 || mb_strlen($name) > 80) {
+            throw new HttpException(422, 'Workspace name must be between 2 and 80 characters');
+        }
+        return $name;
+    }
+
+    public static function workspaceDescription(string $description): string
+    {
+        $description = trim($description);
+        if (mb_strlen($description) < 2 || mb_strlen($description) > 1000) {
+            throw new HttpException(422, 'Workspace description must be between 2 and 1000 characters');
+        }
+        return $description;
     }
 }

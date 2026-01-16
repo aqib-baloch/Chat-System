@@ -7,6 +7,7 @@ use App\Exceptions\HttpException;
 use App\Models\Channel;
 use App\Repositories\ChannelRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\WorkspaceRepository;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Exception\BulkWriteException;
 
@@ -14,14 +15,17 @@ final class ChannelService
 {
     private ChannelRepository $channelRepo;
     private UserRepository $userRepo;
+    private WorkspaceRepository $workspaceRepo;
 
-    public function __construct(ChannelRepository $channelRepo, UserRepository $userRepo)
+    public function __construct(ChannelRepository $channelRepo, UserRepository $userRepo, WorkspaceRepository $workspaceRepo)
     {
         $this->channelRepo = $channelRepo;
         $this->userRepo = $userRepo;
+        $this->workspaceRepo = $workspaceRepo;
     }
 
     public function createChannel(
+        ObjectId $workspaceId,
         string $name,
         string $description,
         string $type,
@@ -31,7 +35,7 @@ final class ChannelService
             throw new HttpException(422, 'Invalid channel visibility');
         }
 
-        if ($this->channelRepo->findByName($name)) {
+        if ($this->channelRepo->findByName($workspaceId, $name)) {
             throw new HttpException(409, 'Channel name already exists');
         }
 
@@ -40,7 +44,15 @@ final class ChannelService
             throw new HttpException(401, 'Unauthorized');
         }
 
-        $channel = Channel::createNew($name, $description, $type, $createdBy);
+        $workspace = $this->workspaceRepo->findById($workspaceId);
+        if (!$workspace) {
+            throw new HttpException(404, 'Workspace not found');
+        }
+        if ((string)$workspace->getCreatedBy() !== (string)$createdBy) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        $channel = Channel::createNew($workspaceId, $name, $description, $type, $createdBy);
         try {
             return $this->channelRepo->create($channel);
         } catch (BulkWriteException $e) {
@@ -52,10 +64,14 @@ final class ChannelService
         }
     }
 
-    public function getChannel(ObjectId $channelId, ObjectId $userId): ?Channel
+    public function getChannel(ObjectId $workspaceId, ObjectId $channelId, ObjectId $userId): ?Channel
     {
         $channel = $this->channelRepo->findById($channelId);
         if (!$channel) {
+            return null;
+        }
+
+        if ((string)$channel->getWorkspaceId() !== (string)$workspaceId) {
             return null;
         }
 
@@ -66,17 +82,34 @@ final class ChannelService
         return $channel;
     }
 
-    public function getUserChannels(ObjectId $userId): array
+    public function getUserChannels(ObjectId $workspaceId, ObjectId $userId): array
     {
-        return $this->channelRepo->findAccessibleChannels($userId);
+        $workspace = $this->workspaceRepo->findById($workspaceId);
+        if (!$workspace) {
+            throw new HttpException(404, 'Workspace not found');
+        }
+        if ((string)$workspace->getCreatedBy() !== (string)$userId) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        return $this->channelRepo->findAccessibleChannels($workspaceId, $userId);
     }
 
-    public function getPublicChannels(): array
+    public function getPublicChannels(ObjectId $workspaceId, ObjectId $userId): array
     {
-        return $this->channelRepo->findPublicChannels();
+        $workspace = $this->workspaceRepo->findById($workspaceId);
+        if (!$workspace) {
+            throw new HttpException(404, 'Workspace not found');
+        }
+        if ((string)$workspace->getCreatedBy() !== (string)$userId) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        return $this->channelRepo->findPublicChannels($workspaceId);
     }
 
     public function updateChannel(
+        ObjectId $workspaceId,
         ObjectId $channelId,
         string $name,
         string $description,
@@ -87,13 +120,17 @@ final class ChannelService
             throw new HttpException(404, 'Channel not found');
         }
 
+        if ((string)$channel->getWorkspaceId() !== (string)$workspaceId) {
+            throw new HttpException(404, 'Channel not found');
+        }
+
         if (!$this->channelRepo->canUserModifyChannel($userId, $channelId)) {
             throw new HttpException(403, 'Forbidden');
         }
 
         // Check if new name conflicts (only if name changed)
         if ($name !== $channel->getName()) {
-            $existingChannel = $this->channelRepo->findByName($name);
+            $existingChannel = $this->channelRepo->findByName($workspaceId, $name);
             if ($existingChannel && (string)$existingChannel->getId() !== (string)$channelId) {
                 throw new HttpException(409, 'Channel name already exists');
             }
@@ -105,10 +142,14 @@ final class ChannelService
         return $channel;
     }
 
-    public function deleteChannel(ObjectId $channelId, ObjectId $userId): bool
+    public function deleteChannel(ObjectId $workspaceId, ObjectId $channelId, ObjectId $userId): bool
     {
         $channel = $this->channelRepo->findById($channelId);
         if (!$channel) {
+            throw new HttpException(404, 'Channel not found');
+        }
+
+        if ((string)$channel->getWorkspaceId() !== (string)$workspaceId) {
             throw new HttpException(404, 'Channel not found');
         }
 

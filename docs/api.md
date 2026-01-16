@@ -106,17 +106,61 @@ Errors:
 
 ## Channels
 
-All channel routes require:
+Channels are scoped under a workspace.
+
+All workspace + channel routes require:
 - `Authorization: Bearer <token>`
 
-### Create Channel
+## Workspaces
 
-`POST /channels`
+### Create Workspace
+
+`POST /workspaces`
 
 Body:
 ```json
 {
-  "name": "general",
+  "name": "Acme",
+  "description": "Main workspace"
+}
+```
+
+### List Workspaces
+
+`GET /workspaces`
+
+### Get Workspace By Id
+
+`GET /workspaces/{workspaceId}`
+
+### Update Workspace
+
+`PUT /workspaces/{workspaceId}`
+
+Body:
+```json
+{
+  "name": "Acme",
+  "description": "Updated description"
+}
+```
+Notes:
+- You can send only the fields you want to change; missing fields keep their current values.
+
+### Delete Workspace
+
+`DELETE /workspaces/{workspaceId}`
+
+## Channels (Workspace scoped)
+
+### Create Channel
+
+`POST /workspaces/{workspaceId}/channels`
+
+Body:
+```json
+{
+  "name": "Notify Tasks",
   "description": "General chat",
   "visibility": "public"
 }
@@ -143,7 +187,7 @@ Errors:
 
 ### List Accessible Channels
 
-`GET /channels`
+`GET /workspaces/{workspaceId}/channels`
 
 Success `200`:
 ```json
@@ -155,15 +199,15 @@ Success `200`:
 
 ### List Public Channels
 
-`GET /channels/public`
+`GET /workspaces/{workspaceId}/channels/public`
 
 ### Get Channel By Id
 
-`GET /channels/{channelId}`
+`GET /workspaces/{workspaceId}/channels/{channelId}`
 
 ### Update Channel
 
-`PUT /channels/{channelId}`
+`PUT /workspaces/{workspaceId}/channels/{channelId}`
 
 Body:
 ```json
@@ -172,7 +216,9 @@ Body:
   "description": "Updated description"
 }
 ```
+Notes:
+- You can send only the fields you want to change; missing fields keep their current values.
 
 ### Delete Channel
 
-`DELETE /channels/{channelId}`
+`DELETE /workspaces/{workspaceId}/channels/{channelId}`
