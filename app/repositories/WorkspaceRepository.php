@@ -53,6 +53,16 @@ final class WorkspaceRepository
         return $workspaces;
     }
 
+    public function findAll(): array
+    {
+        $cursor = $this->workspaces->find([], ['sort' => ['created_at' => -1]]);
+        $workspaces = [];
+        foreach ($cursor as $data) {
+            $workspaces[] = Workspace::fromArray($data->getArrayCopy());
+        }
+        return $workspaces;
+    }
+
     public function create(Workspace $workspace): Workspace
     {
         $result = $this->workspaces->insertOne($workspace->toArray());
@@ -92,4 +102,3 @@ final class WorkspaceRepository
         return $result->getDeletedCount() > 0;
     }
 }
-

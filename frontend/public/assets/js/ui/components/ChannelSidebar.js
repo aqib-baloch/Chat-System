@@ -112,6 +112,7 @@ export class ChannelSidebar {
 
   renderItem(channel, icon) {
     const isSelected = this.options.selectedChannelId === channel.id;
+    const isLocked = channel.locked === true;
 
     const row = createElement("div", {
       className: `w-full px-3 py-2 rounded-md transition-colors flex items-center gap-2 ${
@@ -122,9 +123,16 @@ export class ChannelSidebar {
     });
 
     const selectButton = createElement("button", {
-      className: "flex-1 min-w-0 text-left flex items-center gap-2",
+      className: `flex-1 min-w-0 text-left flex items-center gap-2 ${
+        isLocked ? "opacity-60 cursor-not-allowed" : ""
+      }`,
       type: "button",
-      onclick: () => this.options.onSelect && this.options.onSelect(channel),
+      disabled: isLocked,
+      onclick: () => {
+        if (isLocked) return;
+        this.options.onSelect && this.options.onSelect(channel);
+      },
+      title: isLocked ? "You don’t have access to this private channel yet." : "",
     });
 
     selectButton.appendChild(createElement("span", { className: "text-sm" }, icon));

@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\AuthController;
 use App\Controllers\ChannelController;
+use App\Controllers\MessageController;
 use App\Controllers\WorkspaceController;
 use App\Core\Database;
 use App\Exceptions\HttpException;
@@ -13,11 +14,14 @@ use App\Http\Response;
 use App\Http\Router;
 use App\Http\Middleware\AuthMiddleware;
 use App\Repositories\AuthTokenRepository;
+use App\Repositories\ChannelMemberRepository;
 use App\Repositories\ChannelRepository;
+use App\Repositories\MessageRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WorkspaceRepository;
 use App\Services\AuthService;
 use App\Services\ChannelService;
+use App\Services\MessageService;
 use App\Services\WorkspaceService;
 
 try {
@@ -36,8 +40,15 @@ try {
 
     $channelRepo = new ChannelRepository($db);
     $channelRepo->ensureIndexes();
-    $channelService = new ChannelService($channelRepo, $userRepo, $workspaceRepo);
+    $channelMemberRepo = new ChannelMemberRepository($db);
+    $channelMemberRepo->ensureIndexes();
+    $channelService = new ChannelService($channelRepo, $userRepo, $workspaceRepo, $channelMemberRepo);
     $channelController = new ChannelController($channelService);
+
+    $messageRepo = new MessageRepository($db);
+    $messageRepo->ensureIndexes();
+    $messageService = new MessageService($messageRepo, $channelRepo, $channelMemberRepo);
+    $messageController = new MessageController($messageService);
     $authMiddleware = new AuthMiddleware($tokenRepo);
 
     $method = Request::method();
@@ -97,6 +108,20 @@ try {
     }));
     $router->delete('workspaces/{workspaceId}/channels/{channelId}', $authMiddleware->handle(function ($userId, string $workspaceId, string $channelId) use ($channelController): void {
         $channelController->delete($userId, $workspaceId, $channelId);
+    }));
+
+    // Message routes (scoped under workspace + channel)
+    $router->get('workspaces/{workspaceId}/channels/{channelId}/messages', $authMiddleware->handle(function ($userId, string $workspaceId, string $channelId) use ($messageController): void {
+        $messageController->list($userId, $workspaceId, $channelId);
+    }));
+    $router->post('workspaces/{workspaceId}/channels/{channelId}/messages', $authMiddleware->handle(function ($userId, string $workspaceId, string $channelId) use ($messageController, $body): void {
+        $messageController->send($userId, $workspaceId, $channelId, $body);
+    }));
+    $router->put('workspaces/{workspaceId}/channels/{channelId}/messages/{messageId}', $authMiddleware->handle(function ($userId, string $workspaceId, string $channelId, string $messageId) use ($messageController, $body): void {
+        $messageController->update($userId, $workspaceId, $channelId, $messageId, $body);
+    }));
+    $router->delete('workspaces/{workspaceId}/channels/{channelId}/messages/{messageId}', $authMiddleware->handle(function ($userId, string $workspaceId, string $channelId, string $messageId) use ($messageController): void {
+        $messageController->delete($userId, $workspaceId, $channelId, $messageId);
     }));
 
     $router->dispatch($method, $path);

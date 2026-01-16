@@ -41,7 +41,7 @@ final class WorkspaceController
 
     public function getAll(ObjectId $userId): void
     {
-        $workspaces = $this->workspaceService->getUserWorkspaces($userId);
+        $workspaces = $this->workspaceService->getAllWorkspaces();
 
         $workspaceData = array_map(function ($workspace) {
             return [

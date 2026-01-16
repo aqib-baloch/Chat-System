@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\Exceptions\HttpException;
 use App\Models\Channel;
+use App\Repositories\ChannelMemberRepository;
 use App\Repositories\ChannelRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WorkspaceRepository;
@@ -16,12 +17,19 @@ final class ChannelService
     private ChannelRepository $channelRepo;
     private UserRepository $userRepo;
     private WorkspaceRepository $workspaceRepo;
+    private ChannelMemberRepository $channelMemberRepo;
 
-    public function __construct(ChannelRepository $channelRepo, UserRepository $userRepo, WorkspaceRepository $workspaceRepo)
+    public function __construct(
+        ChannelRepository $channelRepo,
+        UserRepository $userRepo,
+        WorkspaceRepository $workspaceRepo,
+        ChannelMemberRepository $channelMemberRepo
+    )
     {
         $this->channelRepo = $channelRepo;
         $this->userRepo = $userRepo;
         $this->workspaceRepo = $workspaceRepo;
+        $this->channelMemberRepo = $channelMemberRepo;
     }
 
     public function createChannel(
@@ -48,9 +56,6 @@ final class ChannelService
         if (!$workspace) {
             throw new HttpException(404, 'Workspace not found');
         }
-        if ((string)$workspace->getCreatedBy() !== (string)$createdBy) {
-            throw new HttpException(403, 'Forbidden');
-        }
 
         $channel = Channel::createNew($workspaceId, $name, $description, $type, $createdBy);
         try {
@@ -75,37 +80,46 @@ final class ChannelService
             return null;
         }
 
-        if (!$this->channelRepo->canUserAccessChannel($userId, $channelId)) {
+        if (!$this->canUserReadChannel($channel, $userId)) {
             throw new HttpException(403, 'Forbidden');
         }
 
         return $channel;
     }
 
-    public function getUserChannels(ObjectId $workspaceId, ObjectId $userId): array
+    public function getWorkspaceChannelsWithAccess(ObjectId $workspaceId, ObjectId $userId): array
     {
         $workspace = $this->workspaceRepo->findById($workspaceId);
         if (!$workspace) {
             throw new HttpException(404, 'Workspace not found');
         }
-        if ((string)$workspace->getCreatedBy() !== (string)$userId) {
-            throw new HttpException(403, 'Forbidden');
+
+        $channels = $this->channelRepo->findByWorkspace($workspaceId);
+
+        $result = [];
+        foreach ($channels as $channel) {
+            $access = $this->getChannelAccess($channel, $userId);
+            $result[] = ['channel' => $channel] + $access;
         }
 
-        return $this->channelRepo->findAccessibleChannels($workspaceId, $userId);
+        return $result;
     }
 
-    public function getPublicChannels(ObjectId $workspaceId, ObjectId $userId): array
+    public function getPublicChannelsWithAccess(ObjectId $workspaceId, ObjectId $userId): array
     {
         $workspace = $this->workspaceRepo->findById($workspaceId);
         if (!$workspace) {
             throw new HttpException(404, 'Workspace not found');
         }
-        if ((string)$workspace->getCreatedBy() !== (string)$userId) {
-            throw new HttpException(403, 'Forbidden');
+        $channels = $this->channelRepo->findPublicChannels($workspaceId);
+
+        $result = [];
+        foreach ($channels as $channel) {
+            $access = $this->getChannelAccess($channel, $userId);
+            $result[] = ['channel' => $channel] + $access;
         }
 
-        return $this->channelRepo->findPublicChannels($workspaceId);
+        return $result;
     }
 
     public function updateChannel(
@@ -162,6 +176,44 @@ final class ChannelService
 
     public function canUserAccessChannel(ObjectId $userId, ObjectId $channelId): bool
     {
-        return $this->channelRepo->canUserAccessChannel($userId, $channelId);
+        $channel = $this->channelRepo->findById($channelId);
+        if (!$channel) {
+            return false;
+        }
+
+        return $this->canUserReadChannel($channel, $userId);
+    }
+
+    public function canUserReadChannel(Channel $channel, ObjectId $userId): bool
+    {
+        if ($channel->isPublic()) {
+            return true;
+        }
+
+        if ((string)$channel->getCreatedBy() === (string)$userId) {
+            return true;
+        }
+
+        $id = $channel->getId();
+        if (!$id) {
+            return false;
+        }
+
+        return $this->channelMemberRepo->isMember($id, $userId);
+    }
+
+    public function getChannelAccess(Channel $channel, ObjectId $userId): array
+    {
+        $canRead = $this->canUserReadChannel($channel, $userId);
+
+        // Without messages yet, "can_post" mirrors "can_read".
+        $canPost = $canRead;
+
+        $locked = $channel->isPrivate() && !$canRead;
+        return [
+            'locked' => $locked,
+            'can_read' => $canRead,
+            'can_post' => $canPost,
+        ];
     }
 }

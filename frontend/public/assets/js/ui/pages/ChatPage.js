@@ -10,6 +10,7 @@ import { Button } from "../components/Button.js";
 import { showError, showSuccess, showLoading, hideLoading } from "../../utils/notify.js";
 import { workspacesApi } from "../../services/api/workspaces.api.js";
 import { channelsApi } from "../../services/api/channels.api.js";
+import { messagesApi } from "../../services/api/messages.api.js";
 import { state } from "../../app/state.js";
 
 export class ChatPage {
@@ -23,6 +24,7 @@ export class ChatPage {
 
     this.workspaces = [];
     this.channels = [];
+    this.messages = [];
     this.selectedWorkspace = state.currentWorkspace;
     this.selectedChannel = state.currentChannel;
 
@@ -65,6 +67,9 @@ export class ChatPage {
     this.chatArea = new ChatArea({
       workspace: this.selectedWorkspace,
       channel: this.selectedChannel,
+      messages: this.messages,
+      currentUserId: this.options.user?.id || null,
+      onSend: (text) => this.sendMessage(text),
     });
 
     const layout = new ChatLayout({
@@ -103,6 +108,7 @@ export class ChatPage {
     state.setCurrentWorkspace(workspace);
     state.setCurrentChannel(null);
     this.channels = [];
+    this.messages = [];
     this.updateUI();
 
     showLoading("Loading channels...");
@@ -120,9 +126,57 @@ export class ChatPage {
   }
 
   selectChannel(channel) {
+    if (channel.locked) {
+      showError("This is a private channel. You need access to message in it.");
+      return;
+    }
     this.selectedChannel = channel;
     state.setCurrentChannel(channel);
+    this.messages = [];
+    state.setMessages([]);
     this.updateUI();
+
+    this.loadMessages();
+  }
+
+  async loadMessages() {
+    if (!this.selectedWorkspace || !this.selectedChannel) return;
+
+    showLoading("Loading messages...");
+    try {
+      const result = await messagesApi.list(
+        this.selectedWorkspace.id,
+        this.selectedChannel.id,
+        { limit: 100 }
+      );
+      this.messages = result.messages || [];
+      state.setMessages(this.messages);
+      this.updateUI();
+    } catch (e) {
+      showError(e.response?.data?.error || "Failed to load messages");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async sendMessage(text) {
+    if (!this.selectedWorkspace || !this.selectedChannel) return;
+
+    try {
+      const result = await messagesApi.send(
+        this.selectedWorkspace.id,
+        this.selectedChannel.id,
+        text
+      );
+      const message = result.data;
+      if (message) {
+        this.messages = [...this.messages, message];
+        state.setMessages(this.messages);
+        this.updateUI();
+      }
+    } catch (e) {
+      showError(e.response?.data?.error || "Failed to send message");
+    }
   }
 
   updateUI() {
@@ -144,6 +198,8 @@ export class ChatPage {
     this.chatArea.update({
       workspace: this.selectedWorkspace,
       channel: this.selectedChannel,
+      messages: this.messages,
+      currentUserId: this.options.user?.id || null,
     });
   }
 

@@ -222,3 +222,41 @@ Notes:
 ### Delete Channel
 
 `DELETE /workspaces/{workspaceId}/channels/{channelId}`
+
+## Messages (Workspace + Channel scoped)
+
+All message routes require:
+- `Authorization: Bearer <token>`
+
+### List Messages
+
+`GET /workspaces/{workspaceId}/channels/{channelId}/messages`
+
+Optional query:
+- `limit` (default 50, max 200)
+
+### Send Message
+
+`POST /workspaces/{workspaceId}/channels/{channelId}/messages`
+
+Body:
+```json
+{
+  "content": "Hello!"
+}
+```
+
+### Edit Message
+
+`PUT /workspaces/{workspaceId}/channels/{channelId}/messages/{messageId}`
+
+Body:
+```json
+{
+  "content": "Updated text"
+}
+```
+
+### Delete Message
+
+`DELETE /workspaces/{workspaceId}/channels/{channelId}/messages/{messageId}`

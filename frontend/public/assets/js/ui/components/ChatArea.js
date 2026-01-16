@@ -6,6 +6,9 @@ export class ChatArea {
     this.options = {
       workspace: null,
       channel: null,
+      messages: [],
+      currentUserId: null,
+      onSend: null,
       ...options,
     };
 
@@ -71,7 +74,7 @@ export class ChatArea {
     container.appendChild(header);
 
     const body = createElement("div", {
-      className: "flex-1 overflow-y-auto p-6 bg-white",
+      className: "flex-1 overflow-y-auto p-6 bg-white space-y-3",
     });
 
     if (!this.options.workspace) {
@@ -91,35 +94,91 @@ export class ChatArea {
         )
       );
     } else {
-      body.appendChild(
-        createElement(
-          "div",
-          { className: "h-full flex items-center justify-center text-gray-500" },
-          "Messages UI is next. Workspace + channel navigation is ready."
-        )
-      );
+      if (!this.options.messages || this.options.messages.length === 0) {
+        body.appendChild(
+          createElement(
+            "div",
+            { className: "h-full flex items-center justify-center text-gray-500" },
+            "No messages yet. Say hi 👋"
+          )
+        );
+      } else {
+        this.options.messages.forEach((m) => body.appendChild(this.renderMessage(m)));
+      }
     }
 
     container.appendChild(body);
 
-    const composer = createElement("div", {
+    const composer = createElement("form", {
       className: "p-4 border-t border-gray-200 bg-gray-50",
     });
 
+    const row = createElement("div", { className: "flex items-center gap-3" });
+
     const input = createElement("input", {
       className:
-        "input-field bg-white disabled:bg-gray-100 disabled:cursor-not-allowed",
+        "input-field bg-white disabled:bg-gray-100 disabled:cursor-not-allowed flex-1",
       placeholder: this.options.channel
         ? `Message ${this.options.channel.name}...`
         : "Select a channel to start typing...",
       disabled: !this.options.channel,
     });
 
-    composer.appendChild(input);
+    const sendBtn = createElement(
+      "button",
+      {
+        type: "submit",
+        className:
+          "btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed",
+        disabled: !this.options.channel,
+      },
+      "Send"
+    );
+
+    row.appendChild(input);
+    row.appendChild(sendBtn);
+    composer.appendChild(row);
+
+    composer.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text || !this.options.channel) return;
+      this.options.onSend && this.options.onSend(text);
+      input.value = "";
+    });
+
     container.appendChild(composer);
 
     this.element = container;
     return container;
+  }
+
+  renderMessage(message) {
+    const isMine = this.options.currentUserId && message.sender_id === this.options.currentUserId;
+
+    const row = createElement("div", {
+      className: `flex ${isMine ? "justify-end" : "justify-start"}`,
+    });
+
+    const bubble = createElement("div", {
+      className: `max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${
+        isMine ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-900"
+      }`,
+    });
+
+    const content = createElement("div", { className: "text-sm whitespace-pre-wrap break-words" });
+    content.textContent = message.content;
+
+    const meta = createElement(
+      "div",
+      { className: `text-[11px] mt-1 ${isMine ? "text-white/80" : "text-gray-500"}` },
+      message.created_at ? new Date(message.created_at).toLocaleTimeString() : ""
+    );
+
+    bubble.appendChild(content);
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    return row;
   }
 
   update(options) {

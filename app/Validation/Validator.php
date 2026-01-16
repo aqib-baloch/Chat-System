@@ -118,4 +118,16 @@ final class Validator
         }
         return $description;
     }
+
+    public static function messageContent(string $content): string
+    {
+        $content = trim($content);
+        if ($content === '') {
+            throw new HttpException(422, 'Message content is required');
+        }
+        if (mb_strlen($content) > 5000) {
+            throw new HttpException(422, 'Message content must be at most 5000 characters');
+        }
+        return $content;
+    }
 }

@@ -60,6 +60,21 @@ final class ChannelRepository
         return $channels;
     }
 
+    public function findByWorkspace(ObjectId $workspaceId): array
+    {
+        $cursor = $this->channels->find(
+            ['workspace_id' => $workspaceId],
+            ['sort' => ['created_at' => -1]]
+        );
+        $channels = [];
+
+        foreach ($cursor as $data) {
+            $channels[] = Channel::fromArray($data->getArrayCopy());
+        }
+
+        return $channels;
+    }
+
     public function findByCreator(ObjectId $workspaceId, ObjectId $creatorId): array
     {
         $cursor = $this->channels->find(['workspace_id' => $workspaceId, 'created_by' => $creatorId]);

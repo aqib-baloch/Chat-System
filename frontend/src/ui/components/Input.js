@@ -57,18 +57,19 @@ export class Input {
     this.element = createElement("input", {
       type: this.options.type,
       placeholder: this.options.placeholder,
-      value: this.options.value,
       required: this.options.required,
       disabled: this.options.disabled,
       className: inputClasses,
       id: this.id,
     });
+    this.element.value = this.options.value ?? "";
 
     // Event listeners
     if (this.options.onChange) {
-      this.element.addEventListener("input", (e) =>
-        this.options.onChange(e.target.value)
-      );
+      this.element.addEventListener("input", (e) => {
+        this.options.value = e.target.value;
+        this.options.onChange(e.target.value);
+      });
     }
     if (this.options.onBlur) {
       this.element.addEventListener("blur", (e) =>
@@ -99,14 +100,74 @@ export class Input {
    * Update input properties
    */
   update(options) {
-    const oldContainer = this.container;
+    const wasFocused = document.activeElement === this.element;
+    const selectionStart = this.element?.selectionStart ?? null;
+    const selectionEnd = this.element?.selectionEnd ?? null;
+
+    // Update options
     this.options = { ...this.options, ...options };
-    const newContainer = this.render();
-    if (oldContainer?.parentElement) {
-      oldContainer.parentElement.replaceChild(newContainer, oldContainer);
+
+    // Update input element properties
+    if (this.element) {
+      this.element.type = this.options.type;
+      this.element.placeholder = this.options.placeholder;
+      this.element.required = this.options.required;
+      this.element.disabled = this.options.disabled;
+
+      // Update value if provided
+      if (options.value !== undefined) {
+        this.element.value = options.value;
+      }
+
+      // Update classes
+      const inputClasses = [
+        "input-field",
+        this.options.error
+          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+          : "",
+        this.options.className,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      this.element.className = inputClasses;
     }
-    this.container = newContainer;
-    this.element = newContainer.querySelector("input");
+
+    // Update label if it exists
+    const label = this.container.querySelector("label");
+    if (label && this.options.label) {
+      label.textContent = this.options.label;
+    }
+
+    // Update or create error message
+    let errorElement = this.container.querySelector(".text-red-600");
+    if (this.options.error) {
+      if (!errorElement) {
+        errorElement = createElement(
+          "p",
+          {
+            className: "mt-1 text-sm text-red-600",
+          },
+          this.options.error
+        );
+        this.container.appendChild(errorElement);
+      } else {
+        errorElement.textContent = this.options.error;
+      }
+    } else if (errorElement) {
+      errorElement.remove();
+    }
+
+    // Restore focus and selection if needed
+    if (wasFocused && this.element) {
+      this.element.focus();
+      if (selectionStart !== null && selectionEnd !== null) {
+        try {
+          this.element.setSelectionRange(selectionStart, selectionEnd);
+        } catch {
+          // Ignore for input types that don't support selection.
+        }
+      }
+    }
   }
 
   /**

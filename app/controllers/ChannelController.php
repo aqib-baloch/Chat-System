@@ -45,9 +45,10 @@ final class ChannelController
     public function getAll(ObjectId $userId, string $workspaceId): void
     {
         $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
-        $channels = $this->channelService->getUserChannels($workspaceObjectId, $userId);
+        $items = $this->channelService->getWorkspaceChannelsWithAccess($workspaceObjectId, $userId);
 
-        $channelData = array_map(function ($channel) {
+        $channelData = array_map(function (array $item) {
+            $channel = $item['channel'];
             return [
                 'id' => (string)$channel->getId(),
                 'workspace_id' => (string)$channel->getWorkspaceId(),
@@ -57,8 +58,11 @@ final class ChannelController
                 'created_by' => (string)$channel->getCreatedBy(),
                 'created_at' => $channel->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $channel->getUpdatedAt()?->format(DATE_ATOM),
+                'locked' => (bool)($item['locked'] ?? false),
+                'can_read' => (bool)($item['can_read'] ?? false),
+                'can_post' => (bool)($item['can_post'] ?? false),
             ];
-        }, $channels);
+        }, $items);
 
         Response::json([
             'success' => true,
@@ -69,9 +73,10 @@ final class ChannelController
     public function getPublic(ObjectId $userId, string $workspaceId): void
     {
         $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
-        $channels = $this->channelService->getPublicChannels($workspaceObjectId, $userId);
+        $items = $this->channelService->getPublicChannelsWithAccess($workspaceObjectId, $userId);
 
-        $channelData = array_map(function ($channel) {
+        $channelData = array_map(function (array $item) {
+            $channel = $item['channel'];
             return [
                 'id' => (string)$channel->getId(),
                 'workspace_id' => (string)$channel->getWorkspaceId(),
@@ -81,8 +86,11 @@ final class ChannelController
                 'created_by' => (string)$channel->getCreatedBy(),
                 'created_at' => $channel->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $channel->getUpdatedAt()?->format(DATE_ATOM),
+                'locked' => (bool)($item['locked'] ?? false),
+                'can_read' => (bool)($item['can_read'] ?? false),
+                'can_post' => (bool)($item['can_post'] ?? false),
             ];
-        }, $channels);
+        }, $items);
 
         Response::json([
             'success' => true,
@@ -111,6 +119,9 @@ final class ChannelController
                 'created_by' => (string)$channel->getCreatedBy(),
                 'created_at' => $channel->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $channel->getUpdatedAt()?->format(DATE_ATOM),
+                'locked' => !$this->channelService->canUserReadChannel($channel, $userId) && $channel->isPrivate(),
+                'can_read' => $this->channelService->canUserReadChannel($channel, $userId),
+                'can_post' => $this->channelService->canUserReadChannel($channel, $userId),
             ],
         ]);
     }

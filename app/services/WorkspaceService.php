@@ -51,17 +51,12 @@ final class WorkspaceService
         if (!$workspace) {
             return null;
         }
-
-        if ((string)$workspace->getCreatedBy() !== (string)$userId) {
-            throw new HttpException(403, 'Forbidden');
-        }
-
         return $workspace;
     }
 
-    public function getUserWorkspaces(ObjectId $userId): array
+    public function getAllWorkspaces(): array
     {
-        return $this->workspaceRepo->findByCreator($userId);
+        return $this->workspaceRepo->findAll();
     }
 
     public function updateWorkspace(ObjectId $workspaceId, string $name, string $description, ObjectId $userId): Workspace
@@ -102,4 +97,3 @@ final class WorkspaceService
         return $this->workspaceRepo->delete($workspaceId);
     }
 }
-
