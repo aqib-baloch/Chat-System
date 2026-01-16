@@ -5,6 +5,7 @@ export class AppShell {
     this.element = null;
     this.options = {
       title: "Chat System",
+      fluid: false,
       user: null,
       onLogout: null,
       content: "",
@@ -23,7 +24,9 @@ export class AppShell {
       className: "bg-white shadow-sm border-b border-gray-200",
     });
     const navContainer = createElement("div", {
-      className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      className: this.options.fluid
+        ? "w-full px-4 sm:px-6 lg:px-8"
+        : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
     });
     const navContent = createElement("div", {
       className: "flex justify-between h-16",
@@ -91,12 +94,13 @@ export class AppShell {
     navbar.appendChild(navContainer);
     container.appendChild(navbar);
 
-    // Main content
     const main = createElement("main", {
-      className: "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8",
+      className: this.options.fluid
+        ? "w-full"
+        : "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8",
     });
     const contentContainer = createElement("div", {
-      className: "px-4 py-6 sm:px-0",
+      className: this.options.fluid ? "" : "px-4 py-6 sm:px-0",
     });
 
     if (typeof this.options.content === "string") {
@@ -112,35 +116,24 @@ export class AppShell {
     return container;
   }
 
-  /**
-   * Update the app shell
-   */
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }
 
-  /**
-   * Set the main content
-   */
   setContent(content) {
     this.update({ content });
   }
 
-  /**
-   * Update user information
-   */
   setUser(user) {
     this.update({ user });
   }
 
-  /**
-   * Get the app shell element
-   */
   getElement() {
     return this.element;
   }

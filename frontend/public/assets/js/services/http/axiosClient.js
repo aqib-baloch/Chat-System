@@ -1,3 +1,4 @@
+// Axios is loaded via CDN, so we access it globally
 const axios = window.axios;
 import { API_BASE_URL } from "../../config/env.js";
 import { getToken, clearToken } from "./tokenStore.js";
@@ -31,6 +32,7 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       clearToken();
+
       if (window.location.hash !== ROUTES.LOGIN) {
         window.location.hash = ROUTES.LOGIN;
       }

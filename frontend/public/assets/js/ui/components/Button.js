@@ -1,5 +1,8 @@
 import { createElement } from "../../utils/dom.js";
 
+/**
+ * Button component
+ */
 export class Button {
   constructor(options = {}) {
     this.element = null;
@@ -60,19 +63,30 @@ export class Button {
     return this.element;
   }
 
+  /**
+   * Update button properties
+   */
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
+    // Re-render if needed
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }
 
+  /**
+   * Get the button element
+   */
   getElement() {
     return this.element;
   }
 
+  /**
+   * Enable/disable button
+   */
   setDisabled(disabled) {
     this.options.disabled = disabled;
     this.element.disabled = disabled;

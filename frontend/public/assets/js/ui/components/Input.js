@@ -1,5 +1,8 @@
 import { createElement } from "../../utils/dom.js";
 
+/**
+ * Input component
+ */
 export class Input {
   constructor(options = {}) {
     this.element = null;
@@ -24,6 +27,7 @@ export class Input {
   render() {
     const container = createElement("div", { className: "mb-4" });
 
+    // Label
     if (this.options.label) {
       const label = createElement(
         "label",
@@ -36,8 +40,10 @@ export class Input {
       container.appendChild(label);
     }
 
+    // Input wrapper
     const inputWrapper = createElement("div", { className: "relative" });
 
+    // Input element
     const inputClasses = [
       "input-field",
       this.options.error
@@ -58,6 +64,7 @@ export class Input {
       id: this.id,
     });
 
+    // Event listeners
     if (this.options.onChange) {
       this.element.addEventListener("input", (e) =>
         this.options.onChange(e.target.value)
@@ -72,6 +79,7 @@ export class Input {
     inputWrapper.appendChild(this.element);
     container.appendChild(inputWrapper);
 
+    // Error message
     if (this.options.error) {
       const errorElement = createElement(
         "p",
@@ -87,37 +95,59 @@ export class Input {
     return container;
   }
 
+  /**
+   * Update input properties
+   */
   update(options) {
+    const oldContainer = this.container;
     this.options = { ...this.options, ...options };
     const newContainer = this.render();
-    if (this.container.parentElement) {
-      this.container.parentElement.replaceChild(newContainer, this.container);
+    if (oldContainer?.parentElement) {
+      oldContainer.parentElement.replaceChild(newContainer, oldContainer);
     }
     this.container = newContainer;
     this.element = newContainer.querySelector("input");
   }
 
+  /**
+   * Get the input container element
+   */
   getElement() {
     return this.container;
   }
 
+  /**
+   * Get the input value
+   */
   getValue() {
     return this.element.value;
   }
 
+  /**
+   * Set the input value
+   */
   setValue(value) {
     this.element.value = value;
     this.options.value = value;
   }
 
+  /**
+   * Set error message
+   */
   setError(error) {
     this.update({ error });
   }
 
+  /**
+   * Clear error message
+   */
   clearError() {
     this.update({ error: "" });
   }
 
+  /**
+   * Focus the input
+   */
   focus() {
     this.element.focus();
   }

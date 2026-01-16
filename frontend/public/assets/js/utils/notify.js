@@ -10,9 +10,9 @@ let toastContainer = null;
 const initToastContainer = () => {
   if (toastContainer) return;
 
-  toastContainer = document.createElement('div');
-  toastContainer.className = 'fixed top-4 right-4 z-50 space-y-2';
-  toastContainer.id = 'toast-container';
+  toastContainer = document.createElement("div");
+  toastContainer.className = "fixed top-4 right-4 z-50 space-y-2";
+  toastContainer.id = "toast-container";
   document.body.appendChild(toastContainer);
 };
 
@@ -22,11 +22,13 @@ const initToastContainer = () => {
  * @param {string} type - 'success', 'error', 'warning', 'info'
  * @param {number} duration - Duration in milliseconds
  */
-export const showToast = (message, type = 'info', duration = 3000) => {
+export const showToast = (message, type = "info", duration = 3000) => {
   initToastContainer();
 
-  const toast = document.createElement('div');
-  toast.className = `p-4 rounded-md shadow-lg max-w-sm animate-slide-in-right ${getToastClasses(type)}`;
+  const toast = document.createElement("div");
+  toast.className = `p-4 rounded-md shadow-lg max-w-sm animate-slide-in-right ${getToastClasses(
+    type
+  )}`;
 
   toast.innerHTML = `
     <div class="flex items-center">
@@ -57,16 +59,16 @@ export const showToast = (message, type = 'info', duration = 3000) => {
  * @returns {string}
  */
 const getToastClasses = (type) => {
-  const baseClasses = 'text-white';
+  const baseClasses = "text-white";
 
   switch (type) {
-    case 'success':
+    case "success":
       return `${baseClasses} bg-green-500`;
-    case 'error':
+    case "error":
       return `${baseClasses} bg-red-500`;
-    case 'warning':
+    case "warning":
       return `${baseClasses} bg-yellow-500`;
-    case 'info':
+    case "info":
     default:
       return `${baseClasses} bg-blue-500`;
   }
@@ -78,7 +80,7 @@ const getToastClasses = (type) => {
  * @param {number} duration
  */
 export const showSuccess = (message, duration) => {
-  return showToast(message, 'success', duration);
+  return showToast(message, "success", duration);
 };
 
 /**
@@ -87,7 +89,7 @@ export const showSuccess = (message, duration) => {
  * @param {number} duration
  */
 export const showError = (message, duration) => {
-  return showToast(message, 'error', duration);
+  return showToast(message, "error", duration);
 };
 
 /**
@@ -96,7 +98,7 @@ export const showError = (message, duration) => {
  * @param {number} duration
  */
 export const showWarning = (message, duration) => {
-  return showToast(message, 'warning', duration);
+  return showToast(message, "warning", duration);
 };
 
 /**
@@ -105,7 +107,7 @@ export const showWarning = (message, duration) => {
  * @param {number} duration
  */
 export const showInfo = (message, duration) => {
-  return showToast(message, 'info', duration);
+  return showToast(message, "info", duration);
 };
 
 /**
@@ -113,10 +115,11 @@ export const showInfo = (message, duration) => {
  * @param {string} message
  * @returns {Element} Loading element
  */
-export const showLoading = (message = 'Loading...') => {
-  const loading = document.createElement('div');
-  loading.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-  loading.id = 'loading-overlay';
+export const showLoading = (message = "Loading...") => {
+  const loading = document.createElement("div");
+  loading.className =
+    "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+  loading.id = "loading-overlay";
 
   loading.innerHTML = `
     <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
@@ -133,7 +136,7 @@ export const showLoading = (message = 'Loading...') => {
  * Hide loading indicator
  */
 export const hideLoading = () => {
-  const loading = document.getElementById('loading-overlay');
+  const loading = document.getElementById("loading-overlay");
   if (loading) {
     loading.remove();
   }

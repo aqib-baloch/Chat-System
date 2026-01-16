@@ -100,10 +100,11 @@ export class Loader {
    * Update loader options
    */
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }

@@ -1,5 +1,8 @@
 import { STORAGE_KEYS } from "../../config/constants.js";
 
+/**
+ * Token storage utilities
+ */
 export const getToken = () => {
   return localStorage.getItem(STORAGE_KEYS.TOKEN);
 };

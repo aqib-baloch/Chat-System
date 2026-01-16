@@ -8,7 +8,7 @@
  * @returns {string}
  */
 export const escapeHtml = (text) => {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 };
@@ -19,8 +19,8 @@ export const escapeHtml = (text) => {
  * @returns {string}
  */
 export const sanitizeInput = (input) => {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
   return escapeHtml(input.trim());
 };
@@ -37,7 +37,7 @@ export const createSafeElement = (tag, content, attrs = {}) => {
   element.textContent = content;
 
   Object.entries(attrs).forEach(([key, value]) => {
-    if (key !== 'innerHTML' && key !== 'textContent') {
+    if (key !== "innerHTML" && key !== "textContent") {
       element.setAttribute(key, value);
     }
   });
@@ -56,7 +56,7 @@ export const sanitizeObject = (obj, allowedKeys = []) => {
 
   Object.entries(obj).forEach(([key, value]) => {
     if (allowedKeys.length === 0 || allowedKeys.includes(key)) {
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         sanitized[key] = sanitizeInput(value);
       } else {
         sanitized[key] = value;

@@ -1,5 +1,8 @@
 import { createElement } from "../../utils/dom.js";
 
+/**
+ * Loader component for loading states
+ */
 export class Loader {
   constructor(options = {}) {
     this.element = null;
@@ -28,11 +31,13 @@ export class Loader {
       className: "flex flex-col items-center space-y-2",
     });
 
+    // Spinner
     const spinner = createElement("div", {
       className: `animate-spin rounded-full border-2 border-current border-t-transparent ${this.getSizeClasses()} ${this.getColorClasses()}`,
     });
     loaderContainer.appendChild(spinner);
 
+    // Text
     if (this.options.text) {
       const text = createElement(
         "p",
@@ -73,32 +78,48 @@ export class Loader {
     }
   }
 
+  /**
+   * Show the loader
+   */
   show() {
     if (!this.element.parentElement) {
       document.body.appendChild(this.element);
     }
   }
 
+  /**
+   * Hide the loader
+   */
   hide() {
     if (this.element.parentElement) {
       this.element.remove();
     }
   }
 
+  /**
+   * Update loader options
+   */
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }
 
+  /**
+   * Get the loader element
+   */
   getElement() {
     return this.element;
   }
 }
 
+/**
+ * Convenience function to create and show a loading overlay
+ */
 export const showLoadingOverlay = (text = "Loading...") => {
   const loader = new Loader({ overlay: true, text, size: "lg" });
   loader.show();

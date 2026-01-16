@@ -22,6 +22,7 @@ export const authApi = {
 
   async logout() {
     const response = await axiosClient.post("/logout");
+
     clearToken();
     return response.data;
   },

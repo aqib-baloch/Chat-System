@@ -99,10 +99,11 @@ export class Input {
    * Update input properties
    */
   update(options) {
+    const oldContainer = this.container;
     this.options = { ...this.options, ...options };
     const newContainer = this.render();
-    if (this.container.parentElement) {
-      this.container.parentElement.replaceChild(newContainer, this.container);
+    if (oldContainer?.parentElement) {
+      oldContainer.parentElement.replaceChild(newContainer, oldContainer);
     }
     this.container = newContainer;
     this.element = newContainer.querySelector("input");

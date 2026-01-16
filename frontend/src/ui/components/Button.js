@@ -67,11 +67,12 @@ export class Button {
    * Update button properties
    */
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
     // Re-render if needed
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }
