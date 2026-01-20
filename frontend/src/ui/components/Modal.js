@@ -1,8 +1,5 @@
 import { createElement } from "../../utils/dom.js";
 
-/**
- * Modal component
- */
 export class Modal {
   constructor(options = {}) {
     this.element = null;
@@ -10,7 +7,7 @@ export class Modal {
       title: "",
       content: "",
       showCloseButton: true,
-      size: "md", // 'sm', 'md', 'lg', 'xl'
+      size: "md",
       onClose: null,
       ...options,
     };
@@ -19,18 +16,15 @@ export class Modal {
   }
 
   render() {
-    // Backdrop
     const backdrop = createElement("div", {
       className:
         "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50",
     });
 
-    // Modal container
     const modal = createElement("div", {
       className: `bg-white rounded-lg shadow-xl max-h-[90vh] overflow-hidden ${this.getSizeClasses()}`,
     });
 
-    // Header
     const header = createElement("div", {
       className:
         "flex items-center justify-between p-6 border-b border-gray-200",
@@ -62,7 +56,6 @@ export class Modal {
 
     modal.appendChild(header);
 
-    // Body
     const body = createElement("div", {
       className: "p-6 overflow-y-auto",
     });
@@ -75,7 +68,6 @@ export class Modal {
 
     modal.appendChild(body);
 
-    // Footer (optional)
     if (this.options.footer) {
       const footer = createElement("div", {
         className:
@@ -93,14 +85,12 @@ export class Modal {
 
     backdrop.appendChild(modal);
 
-    // Close on backdrop click
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
         this.close();
       }
     });
 
-    // Close on Escape key
     const handleEscape = (e) => {
       if (e.key === "Escape") {
         this.close();
@@ -125,17 +115,11 @@ export class Modal {
     return sizes[this.options.size] || sizes.md;
   }
 
-  /**
-   * Show the modal
-   */
   show() {
     document.body.appendChild(this.element);
     document.body.style.overflow = "hidden";
   }
 
-  /**
-   * Close the modal
-   */
   close() {
     if (this.element.parentElement) {
       this.element.remove();
@@ -148,9 +132,6 @@ export class Modal {
     }
   }
 
-  /**
-   * Update modal content
-   */
   updateContent(content) {
     this.options.content = content;
     const body = this.modal.querySelector(".p-6.overflow-y-auto");
@@ -164,9 +145,6 @@ export class Modal {
     }
   }
 
-  /**
-   * Get the modal element
-   */
   getElement() {
     return this.element;
   }

@@ -1,22 +1,8 @@
-/**
- * Client-side validation utilities
- */
-
-/**
- * Validate email format
- * @param {string} email
- * @returns {boolean}
- */
 export const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-/**
- * Validate password strength
- * @param {string} password
- * @returns {Object} { isValid: boolean, errors: string[] }
- */
 export const validatePassword = (password) => {
   const errors = [];
 
@@ -42,20 +28,10 @@ export const validatePassword = (password) => {
   };
 };
 
-/**
- * Validate name (non-empty, reasonable length)
- * @param {string} name
- * @returns {boolean}
- */
 export const isValidName = (name) => {
   return name.trim().length >= 2 && name.trim().length <= 50;
 };
 
-/**
- * Validate required field
- * @param {*} value
- * @returns {boolean}
- */
 export const isRequired = (value) => {
   if (typeof value === "string") {
     return value.trim().length > 0;
@@ -63,12 +39,6 @@ export const isRequired = (value) => {
   return value != null;
 };
 
-/**
- * Validate form data
- * @param {Object} data - Form data
- * @param {Object} rules - Validation rules
- * @returns {Object} { isValid: boolean, errors: Object }
- */
 export const validateForm = (data, rules) => {
   const errors = {};
   let isValid = true;

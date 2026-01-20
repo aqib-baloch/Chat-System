@@ -1,4 +1,3 @@
-// Axios is loaded via CDN, so we access it globally
 const axios = window.axios;
 import { API_BASE_URL } from "../../config/env.js";
 import { getToken, clearToken } from "./tokenStore.js";

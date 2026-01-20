@@ -10,9 +10,6 @@ import { authApi } from "../../services/api/auth.api.js";
 import { Button } from "../components/Button.js";
 import { Input } from "../components/Input.js";
 
-/**
- * Register Page Component
- */
 export class RegisterPage {
   constructor(options = {}) {
     this.element = null;
@@ -40,7 +37,6 @@ export class RegisterPage {
       className: "max-w-md w-full space-y-8",
     });
 
-    // Header
     const header = createElement("div", { className: "text-center" });
     const title = createElement(
       "h2",
@@ -56,11 +52,9 @@ export class RegisterPage {
     header.appendChild(subtitle);
     card.appendChild(header);
 
-    // Form
     const form = createElement("form", { className: "mt-8 space-y-6" });
     form.addEventListener("submit", (e) => this.handleSubmit(e));
 
-    // Name input
     const nameInput = new Input({
       type: "text",
       label: "Full Name",
@@ -74,7 +68,6 @@ export class RegisterPage {
     this.nameInput = nameInput;
     form.appendChild(nameInput.getElement());
 
-    // Email input
     const emailInput = new Input({
       type: "email",
       label: "Email address",
@@ -88,7 +81,6 @@ export class RegisterPage {
     this.emailInput = emailInput;
     form.appendChild(emailInput.getElement());
 
-    // Password input
     const passwordInput = new Input({
       type: "password",
       label: "Password",
@@ -103,7 +95,6 @@ export class RegisterPage {
     this.passwordInput = passwordInput;
     form.appendChild(passwordInput.getElement());
 
-    // Confirm Password input
     const confirmPasswordInput = new Input({
       type: "password",
       label: "Confirm Password",
@@ -118,7 +109,6 @@ export class RegisterPage {
     this.confirmPasswordInput = confirmPasswordInput;
     form.appendChild(confirmPasswordInput.getElement());
 
-    // Submit button
     const submitButton = new Button({
       text: "Create Account",
       variant: "primary",
@@ -128,7 +118,6 @@ export class RegisterPage {
     this.submitButton = submitButton;
     form.appendChild(submitButton.getElement());
 
-    // Login link
     const loginLink = createElement("div", { className: "text-center mt-4" });
     const loginText = createElement("p", {
       className: "text-sm text-gray-600",
@@ -158,13 +147,11 @@ export class RegisterPage {
   async handleSubmit(e) {
     if (e) e.preventDefault();
 
-    // Clear previous errors
     this.nameInput.clearError();
     this.emailInput.clearError();
     this.passwordInput.clearError();
     this.confirmPasswordInput.clearError();
 
-    // Validate form
     const validationRules = {
       name: [{ type: "required" }, { type: "name" }],
       email: [{ type: "required" }, { type: "email" }],
@@ -174,14 +161,12 @@ export class RegisterPage {
 
     const validation = validateForm(this.formData, validationRules);
 
-    // Additional password match validation
     if (this.formData.password !== this.formData.confirmPassword) {
       validation.isValid = false;
       validation.errors.confirmPassword = ["Passwords do not match"];
     }
 
     if (!validation.isValid) {
-      // Show validation errors
       Object.entries(validation.errors).forEach(([field, errors]) => {
         const errorMessage = errors.join(", ");
         switch (field) {
@@ -201,8 +186,6 @@ export class RegisterPage {
       });
       return;
     }
-
-    // Show loading
     this.submitButton.setDisabled(true);
     const loading = showLoading("Creating account...");
 
@@ -216,7 +199,6 @@ export class RegisterPage {
       hideLoading();
       showSuccess("Account created successfully! You can now sign in.");
 
-      // Redirect to login
       setTimeout(() => {
         window.location.hash = "#/login";
       }, 2000);
@@ -229,7 +211,6 @@ export class RegisterPage {
         "Registration failed. Please try again.";
       showError(errorMessage);
 
-      // Handle specific validation errors
       if (error.response?.status === 422 && error.response.data?.errors) {
         Object.entries(error.response.data.errors).forEach(
           ([field, messages]) => {
@@ -253,17 +234,9 @@ export class RegisterPage {
     }
   }
 
-  /**
-   * Get the page element
-   */
   getElement() {
     return this.element;
   }
 
-  /**
-   * Clean up event listeners
-   */
-  destroy() {
-    // Clean up if needed
-  }
+  destroy() {}
 }

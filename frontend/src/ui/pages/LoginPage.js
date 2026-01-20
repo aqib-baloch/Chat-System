@@ -10,9 +10,6 @@ import { authApi } from "../../services/api/auth.api.js";
 import { Button } from "../components/Button.js";
 import { Input } from "../components/Input.js";
 
-/**
- * Login Page Component
- */
 export class LoginPage {
   constructor(options = {}) {
     this.element = null;
@@ -38,7 +35,6 @@ export class LoginPage {
       className: "max-w-md w-full space-y-8",
     });
 
-    // Header
     const header = createElement("div", { className: "text-center" });
     const title = createElement(
       "h2",
@@ -54,11 +50,9 @@ export class LoginPage {
     header.appendChild(subtitle);
     card.appendChild(header);
 
-    // Form
     const form = createElement("form", { className: "mt-8 space-y-6" });
     form.addEventListener("submit", (e) => this.handleSubmit(e));
 
-    // Email input
     const emailInput = new Input({
       type: "email",
       label: "Email address",
@@ -72,7 +66,6 @@ export class LoginPage {
     this.emailInput = emailInput;
     form.appendChild(emailInput.getElement());
 
-    // Password input
     const passwordInput = new Input({
       type: "password",
       label: "Password",
@@ -86,7 +79,6 @@ export class LoginPage {
     this.passwordInput = passwordInput;
     form.appendChild(passwordInput.getElement());
 
-    // Submit button
     const submitButton = new Button({
       text: "Sign in",
       variant: "primary",
@@ -96,7 +88,6 @@ export class LoginPage {
     this.submitButton = submitButton;
     form.appendChild(submitButton.getElement());
 
-    // Register link
     const registerLink = createElement("div", {
       className: "text-center mt-4",
     });
@@ -118,11 +109,9 @@ export class LoginPage {
   async handleSubmit(e) {
     if (e) e.preventDefault();
 
-    // Clear previous errors
     this.emailInput.clearError();
     this.passwordInput.clearError();
 
-    // Validate form
     const validationRules = {
       email: [{ type: "required" }, { type: "email" }],
       password: [{ type: "required" }],
@@ -131,7 +120,6 @@ export class LoginPage {
     const validation = validateForm(this.formData, validationRules);
 
     if (!validation.isValid) {
-      // Show validation errors
       Object.entries(validation.errors).forEach(([field, errors]) => {
         const errorMessage = errors.join(", ");
         if (field === "email") {
@@ -143,7 +131,6 @@ export class LoginPage {
       return;
     }
 
-    // Show loading
     this.submitButton.setDisabled(true);
     const loading = showLoading("Signing in...");
 
@@ -153,7 +140,6 @@ export class LoginPage {
       hideLoading();
       showSuccess("Login successful!");
 
-      // Call success callback
       if (this.options.onLoginSuccess) {
         this.options.onLoginSuccess(response);
       }
@@ -165,7 +151,6 @@ export class LoginPage {
         error.response?.data?.message || "Login failed. Please try again.";
       showError(errorMessage);
 
-      // Handle specific validation errors
       if (error.response?.status === 422 && error.response.data?.errors) {
         Object.entries(error.response.data.errors).forEach(
           ([field, messages]) => {
@@ -181,17 +166,9 @@ export class LoginPage {
     }
   }
 
-  /**
-   * Get the page element
-   */
   getElement() {
     return this.element;
   }
 
-  /**
-   * Clean up event listeners
-   */
-  destroy() {
-    // Clean up if needed
-  }
+  destroy() {}
 }
