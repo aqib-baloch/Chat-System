@@ -125,7 +125,7 @@ Success `200`:
 
 Notes:
 - The response is always `200` to avoid user enumeration.
-- Configure SMTP via `.env` (see `.env.example`) so the email can be delivered (Mailtrap).
+- Configure SMTP via `.env` (see `backend/.env.example`) so the email can be delivered (Mailtrap).
 - The reset link uses `FRONTEND_URL` + `FRONTEND_RESET_PASSWORD_PATH` (default is hash-based `/#/reset-password`).
 
 ### Reset Password
