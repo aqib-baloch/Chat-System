@@ -7,7 +7,6 @@ use App\Exceptions\HttpException;
 
 final class Router
 {
-    /** @var array<int, array{method:string, pattern:string, handler:callable}> */
     private array $routes = [];
 
     public function get(string $path, callable $handler): void
@@ -74,7 +73,6 @@ final class Router
     {
         $path = trim($path, '/');
 
-        // Support simple placeholders like "channels/{id}".
         $regex = preg_replace('/\{[a-zA-Z_][a-zA-Z0-9_]*\}/', '([^/]+)', $path);
         if (!is_string($regex)) {
             $regex = $path;

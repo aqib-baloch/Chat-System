@@ -23,7 +23,6 @@ final class GridFSManager
             throw new \RuntimeException('Failed to open file for upload');
         }
 
-        /** @var ObjectId $id */
         $id = $this->bucket->uploadFromStream($filename, $stream, ['metadata' => $metadata]);
         return $id;
     }

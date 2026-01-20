@@ -15,7 +15,7 @@ final class Channel
     private ObjectId $workspaceId;
     private string $name;
     private string $description;
-    private string $type; // 'public' or 'private'
+    private string $type;
     private ObjectId $createdBy;
     private \DateTime $createdAt;
     private ?\DateTime $updatedAt;
