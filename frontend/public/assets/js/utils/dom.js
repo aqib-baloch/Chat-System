@@ -1,23 +1,7 @@
-/**
- * DOM utility functions
- */
-
-/**
- * Query selector wrapper
- * @param {string} selector - CSS selector
- * @param {Element} context - Context element (default: document)
- * @returns {Element|null}
- */
 export const $ = (selector, context = document) => {
   return context.querySelector(selector);
 };
 
-/**
- * Query selector all wrapper
- * @param {string} selector - CSS selector
- * @param {Element} context - Context element (default: document)
- * @returns {NodeList}
- */
 export const $$ = (selector, context = document) => {
   return context.querySelectorAll(selector);
 };
@@ -53,18 +37,10 @@ export const show = (element) => {
   element.style.display = "";
 };
 
-/**
- * Hide element
- * @param {Element} element
- */
 export const hide = (element) => {
   element.style.display = "none";
 };
 
-/**
- * Toggle element visibility
- * @param {Element} element
- */
 export const toggle = (element) => {
   if (element.style.display === "none") {
     show(element);

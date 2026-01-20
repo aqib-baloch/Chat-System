@@ -22,12 +22,31 @@ export const authApi = {
 
   async logout() {
     const response = await axiosClient.post("/logout");
+
     clearToken();
     return response.data;
   },
 
   async getCurrentUser() {
     const response = await axiosClient.get("/getUser");
+    return response.data;
+  },
+
+  async forgotPassword(email) {
+    const response = await axiosClient.post("/forgotPassword", { email });
+    return response.data;
+  },
+
+  async resetPassword({ token, password }) {
+    const response = await axiosClient.post("/resetPassword", { token, password });
+    return response.data;
+  },
+
+  async changePassword({ current_password, new_password }) {
+    const response = await axiosClient.post("/changePassword", {
+      current_password,
+      new_password,
+    });
     return response.data;
   },
 };

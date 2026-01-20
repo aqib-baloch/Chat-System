@@ -1,13 +1,3 @@
-/**
- * Formatting utilities
- */
-
-/**
- * Format date for display
- * @param {string|Date} date
- * @param {Object} options - Intl.DateTimeFormat options
- * @returns {string}
- */
 export const formatDate = (date, options = {}) => {
   const defaultOptions = {
     year: "numeric",
@@ -25,11 +15,6 @@ export const formatDate = (date, options = {}) => {
   }
 };
 
-/**
- * Format time for display
- * @param {string|Date} date
- * @returns {string}
- */
 export const formatTime = (date) => {
   return formatDate(date, {
     hour: "2-digit",
@@ -37,11 +22,6 @@ export const formatTime = (date) => {
   });
 };
 
-/**
- * Format date and time
- * @param {string|Date} date
- * @returns {string}
- */
 export const formatDateTime = (date) => {
   return formatDate(date, {
     year: "numeric",
@@ -52,11 +32,6 @@ export const formatDateTime = (date) => {
   });
 };
 
-/**
- * Format file size in human readable format
- * @param {number} bytes
- * @returns {string}
- */
 export const formatFileSize = (bytes) => {
   if (bytes === 0) return "0 B";
 
@@ -67,11 +42,6 @@ export const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 };
 
-/**
- * Format relative time (e.g., "2 hours ago")
- * @param {string|Date} date
- * @returns {string}
- */
 export const formatRelativeTime = (date) => {
   const now = new Date();
   const past = new Date(date);
@@ -97,12 +67,6 @@ export const formatRelativeTime = (date) => {
   return "just now";
 };
 
-/**
- * Truncate text with ellipsis
- * @param {string} text
- * @param {number} maxLength
- * @returns {string}
- */
 export const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength - 3) + "...";

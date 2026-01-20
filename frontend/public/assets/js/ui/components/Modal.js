@@ -7,7 +7,7 @@ export class Modal {
       title: "",
       content: "",
       showCloseButton: true,
-      size: "md", // 'sm', 'md', 'lg', 'xl'
+      size: "md",
       onClose: null,
       ...options,
     };

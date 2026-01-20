@@ -4,10 +4,10 @@ export class Loader {
   constructor(options = {}) {
     this.element = null;
     this.options = {
-      size: "md", // 'sm', 'md', 'lg'
-      color: "primary", // 'primary', 'white', 'gray'
+      size: "md",
+      color: "primary",
       text: "",
-      overlay: false, // Show as overlay
+      overlay: false,
       ...options,
     };
 
@@ -86,10 +86,11 @@ export class Loader {
   }
 
   update(options) {
+    const oldElement = this.element;
     this.options = { ...this.options, ...options };
     const newElement = this.render();
-    if (this.element.parentElement) {
-      this.element.parentElement.replaceChild(newElement, this.element);
+    if (oldElement?.parentElement) {
+      oldElement.parentElement.replaceChild(newElement, oldElement);
     }
     this.element = newElement;
   }

@@ -1,6 +1,7 @@
 export const state = {
   user: null,
 
+  // UI state
   isLoading: false,
   notifications: [],
 
@@ -25,6 +26,7 @@ export const state = {
       : "";
   },
 
+  // Mutations
   setUser(user) {
     this.user = user;
     this.persistState();
@@ -50,6 +52,7 @@ export const state = {
     this.notifications = this.notifications.filter((n) => n.id !== id);
   },
 
+  // Chat state mutations (for future use)
   setWorkspaces(workspaces) {
     this.workspaces = workspaces;
   },
@@ -78,10 +81,12 @@ export const state = {
     this.onlineUsers = users;
   },
 
+  // Persistence (optional - could save to localStorage)
   persistState() {
     try {
       const persistableState = {
         user: this.user,
+        // Add other persistable state here
       };
       localStorage.setItem("chat_app_state", JSON.stringify(persistableState));
     } catch (error) {
@@ -89,6 +94,7 @@ export const state = {
     }
   },
 
+  // Restore state from storage
   restoreState() {
     try {
       const savedState = localStorage.getItem("chat_app_state");
@@ -102,4 +108,5 @@ export const state = {
   },
 };
 
+// Initialize state
 state.restoreState();

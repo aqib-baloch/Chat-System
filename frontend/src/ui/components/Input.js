@@ -1,8 +1,5 @@
 import { createElement } from "../../utils/dom.js";
 
-/**
- * Input component
- */
 export class Input {
   constructor(options = {}) {
     this.element = null;
@@ -27,7 +24,6 @@ export class Input {
   render() {
     const container = createElement("div", { className: "mb-4" });
 
-    // Label
     if (this.options.label) {
       const label = createElement(
         "label",
@@ -40,10 +36,8 @@ export class Input {
       container.appendChild(label);
     }
 
-    // Input wrapper
     const inputWrapper = createElement("div", { className: "relative" });
 
-    // Input element
     const inputClasses = [
       "input-field",
       this.options.error
@@ -57,18 +51,18 @@ export class Input {
     this.element = createElement("input", {
       type: this.options.type,
       placeholder: this.options.placeholder,
-      value: this.options.value,
       required: this.options.required,
       disabled: this.options.disabled,
       className: inputClasses,
       id: this.id,
     });
+    this.element.value = this.options.value ?? "";
 
-    // Event listeners
     if (this.options.onChange) {
-      this.element.addEventListener("input", (e) =>
-        this.options.onChange(e.target.value)
-      );
+      this.element.addEventListener("input", (e) => {
+        this.options.value = e.target.value;
+        this.options.onChange(e.target.value);
+      });
     }
     if (this.options.onBlur) {
       this.element.addEventListener("blur", (e) =>
@@ -79,7 +73,6 @@ export class Input {
     inputWrapper.appendChild(this.element);
     container.appendChild(inputWrapper);
 
-    // Error message
     if (this.options.error) {
       const errorElement = createElement(
         "p",
@@ -95,58 +88,89 @@ export class Input {
     return container;
   }
 
-  /**
-   * Update input properties
-   */
   update(options) {
+    const wasFocused = document.activeElement === this.element;
+    const selectionStart = this.element?.selectionStart ?? null;
+    const selectionEnd = this.element?.selectionEnd ?? null;
+
     this.options = { ...this.options, ...options };
-    const newContainer = this.render();
-    if (this.container.parentElement) {
-      this.container.parentElement.replaceChild(newContainer, this.container);
+
+    if (this.element) {
+      this.element.type = this.options.type;
+      this.element.placeholder = this.options.placeholder;
+      this.element.required = this.options.required;
+      this.element.disabled = this.options.disabled;
+
+      if (options.value !== undefined) {
+        this.element.value = options.value;
+      }
+
+      const inputClasses = [
+        "input-field",
+        this.options.error
+          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+          : "",
+        this.options.className,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      this.element.className = inputClasses;
     }
-    this.container = newContainer;
-    this.element = newContainer.querySelector("input");
+
+    const label = this.container.querySelector("label");
+    if (label && this.options.label) {
+      label.textContent = this.options.label;
+    }
+
+    let errorElement = this.container.querySelector(".text-red-600");
+    if (this.options.error) {
+      if (!errorElement) {
+        errorElement = createElement(
+          "p",
+          {
+            className: "mt-1 text-sm text-red-600",
+          },
+          this.options.error
+        );
+        this.container.appendChild(errorElement);
+      } else {
+        errorElement.textContent = this.options.error;
+      }
+    } else if (errorElement) {
+      errorElement.remove();
+    }
+
+    if (wasFocused && this.element) {
+      this.element.focus();
+      if (selectionStart !== null && selectionEnd !== null) {
+        try {
+          this.element.setSelectionRange(selectionStart, selectionEnd);
+        } catch {}
+      }
+    }
   }
 
-  /**
-   * Get the input container element
-   */
   getElement() {
     return this.container;
   }
 
-  /**
-   * Get the input value
-   */
   getValue() {
     return this.element.value;
   }
 
-  /**
-   * Set the input value
-   */
   setValue(value) {
     this.element.value = value;
     this.options.value = value;
   }
 
-  /**
-   * Set error message
-   */
   setError(error) {
     this.update({ error });
   }
 
-  /**
-   * Clear error message
-   */
   clearError() {
     this.update({ error: "" });
   }
 
-  /**
-   * Focus the input
-   */
   focus() {
     this.element.focus();
   }

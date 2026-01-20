@@ -11,31 +11,20 @@ export class Router {
     window.addEventListener("load", () => this.handleRoute());
   }
 
-  /**
-   * Register a route
-   * @param {string} path - Route path (e.g., '#/login')
-   * @param {Function} pageConstructor - Page component constructor
-   * @param {Object} options - Additional options
-   */
   addRoute(path, pageConstructor, options = {}) {
     this.routes.set(path, { pageConstructor, options });
   }
 
-  /**
-   * Navigate to a route
-   * @param {string} path - Route path
-   * @param {Object} state - State to pass to the page
-   */
   navigate(path, state = {}) {
     this.nextState = state;
     window.location.hash = path;
   }
 
-  /**
-   * Handle route changes
-   */
   handleRoute() {
-    const hash = window.location.hash || "#/login";
+    const fullHash = window.location.hash || "#/login";
+    const qPos = fullHash.indexOf("?");
+    const hash = qPos === -1 ? fullHash : fullHash.slice(0, qPos);
+    const queryString = qPos === -1 ? "" : fullHash.slice(qPos + 1);
     const route = this.routes.get(hash);
 
     if (!route) {
@@ -44,22 +33,23 @@ export class Router {
       return;
     }
 
-    // Clean up current page
     if (this.currentPage && typeof this.currentPage.destroy === "function") {
       this.currentPage.destroy();
     }
 
-    // Create new page
     try {
       const baseOptions =
         typeof route.options === "function" ? route.options() : route.options;
-      const mergedOptions = { ...(baseOptions || {}), ...(this.nextState || {}) };
+      const mergedOptions = {
+        ...(baseOptions || {}),
+        ...(this.nextState || {}),
+        query: Object.fromEntries(new URLSearchParams(queryString).entries()),
+      };
       this.nextState = null;
 
       this.currentPage = new route.pageConstructor(mergedOptions);
       this.currentRoute = hash;
 
-      // Render page
       const appElement = document.getElementById("app");
       if (appElement) {
         appElement.innerHTML = "";

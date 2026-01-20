@@ -31,6 +31,7 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       clearToken();
+
       if (window.location.hash !== ROUTES.LOGIN) {
         window.location.hash = ROUTES.LOGIN;
       }

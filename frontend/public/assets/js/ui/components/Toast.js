@@ -1,16 +1,13 @@
 import { createElement } from "../../utils/dom.js";
 
-/**
- * Toast component for complex notifications
- */
 export class Toast {
   constructor(options = {}) {
     this.element = null;
     this.options = {
       message: "",
-      type: "info", // 'success', 'error', 'warning', 'info'
+      type: "info",
       duration: 3000,
-      position: "top-right", // 'top-right', 'top-left', 'bottom-right', 'bottom-left'
+      position: "top-right",
       showCloseButton: true,
       onClose: null,
       ...options,
@@ -26,12 +23,10 @@ export class Toast {
 
     const content = createElement("div", { className: "flex items-start" });
 
-    // Icon
     const icon = createElement("div", { className: "flex-shrink-0" });
     icon.innerHTML = this.getIconHtml();
     content.appendChild(icon);
 
-    // Message
     const messageContainer = createElement("div", { className: "ml-3 flex-1" });
     const message = createElement(
       "p",
@@ -40,7 +35,6 @@ export class Toast {
     );
     messageContainer.appendChild(message);
 
-    // Close button
     if (this.options.showCloseButton) {
       const closeButton = createElement(
         "button",
@@ -96,11 +90,7 @@ export class Toast {
     }
   }
 
-  /**
-   * Show the toast
-   */
   show() {
-    // Find or create toast container
     let container = document.getElementById("toast-container");
     if (!container) {
       container = createElement("div", {
@@ -112,7 +102,6 @@ export class Toast {
 
     container.appendChild(this.element);
 
-    // Auto close after duration
     if (this.options.duration > 0) {
       this.timeoutId = setTimeout(() => this.close(), this.options.duration);
     }
@@ -132,9 +121,6 @@ export class Toast {
     }
   }
 
-  /**
-   * Close the toast
-   */
   close() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
@@ -151,9 +137,6 @@ export class Toast {
     }, 300);
   }
 
-  /**
-   * Get the toast element
-   */
   getElement() {
     return this.element;
   }
