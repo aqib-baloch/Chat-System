@@ -153,32 +153,38 @@ export class ChannelSidebar {
       {
         type: "button",
         className:
-          "text-xs px-2 py-1 rounded border border-gray-200 bg-white hover:bg-gray-50",
+          "p-2 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-700",
         onclick: (e) => {
           e.preventDefault();
           e.stopPropagation();
           this.options.onEdit && this.options.onEdit(channel);
         },
         title: "Edit channel",
+        ariaLabel: "Edit channel",
       },
-      "Edit"
+      ""
     );
+    editBtn.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.5 8.5a1 1 0 0 1-.39.242l-3.5 1.167a.75.75 0 0 1-.948-.948l1.167-3.5a1 1 0 0 1 .242-.39l8.5-8.5Z"/><path d="M11.379 5.793 14.207 8.62"/></svg>';
 
     const deleteBtn = createElement(
       "button",
       {
         type: "button",
         className:
-          "text-xs px-2 py-1 rounded border border-red-200 text-red-700 bg-white hover:bg-red-50",
+          "p-2 rounded border border-red-200 text-red-700 bg-white hover:bg-red-50",
         onclick: (e) => {
           e.preventDefault();
           e.stopPropagation();
           this.options.onDelete && this.options.onDelete(channel);
         },
         title: "Delete channel",
+        ariaLabel: "Delete channel",
       },
-      "Delete"
+      ""
     );
+    deleteBtn.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7 2.75A.75.75 0 0 1 7.75 2h4.5a.75.75 0 0 1 .75.75V4h3a.75.75 0 0 1 0 1.5h-.72l-.66 10.02A2.25 2.25 0 0 1 12.38 17.5H7.62a2.25 2.25 0 0 1-2.24-1.98L4.72 5.5H4a.75.75 0 0 1 0-1.5h3V2.75ZM8.5 4h3V3.5h-3V4Zm.75 4.25a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 1.5 0v-6Zm3 0a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 1.5 0v-6Z" clip-rule="evenodd"/></svg>';
 
     actions.appendChild(editBtn);
     actions.appendChild(deleteBtn);

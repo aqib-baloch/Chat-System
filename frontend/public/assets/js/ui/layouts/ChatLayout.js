@@ -19,7 +19,7 @@ export class ChatLayout {
     });
 
     const leftSidebar = createElement("aside", {
-      className: "w-72 bg-white border-r border-gray-200 flex-shrink-0",
+      className: "w-56 bg-white border-r border-gray-200 flex-shrink-0",
     });
 
     if (this.options.leftSidebar) {

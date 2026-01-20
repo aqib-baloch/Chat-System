@@ -27,6 +27,15 @@ final class GridFSManager
         return $id;
     }
 
+    public function getFileInfo(ObjectId $fileId): ?array
+    {
+        $cursor = $this->bucket->find(['_id' => $fileId], ['limit' => 1]);
+        foreach ($cursor as $doc) {
+            return $doc->getArrayCopy();
+        }
+        return null;
+    }
+
     public function downloadFile(string $fileId)
     {
         return $this->bucket->openDownloadStream(new ObjectId($fileId));
@@ -37,4 +46,3 @@ final class GridFSManager
         $this->bucket->delete(new ObjectId($fileId));
     }
 }
-

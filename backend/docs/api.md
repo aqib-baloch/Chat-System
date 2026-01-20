@@ -186,6 +186,40 @@ Channels are scoped under a workspace.
 All workspace + channel routes require:
 - `Authorization: Bearer <token>`
 
+### Channel Members
+
+Only the channel creator can add/remove members.
+
+#### Add Member
+
+`POST /workspaces/{workspaceId}/channels/{channelId}/members`
+
+Body:
+```json
+{
+  "user_id": "65f..."
+}
+```
+
+Success `200`:
+```json
+{ "success": true, "message": "Member added successfully" }
+```
+
+#### Remove Member
+
+`DELETE /workspaces/{workspaceId}/channels/{channelId}/members/{memberUserId}`
+
+Success `200`:
+```json
+{ "success": true, "message": "Member removed successfully" }
+```
+
+Errors:
+- `403` Forbidden (not channel creator)
+- `404` Channel/User not found
+- `409` Cannot remove channel creator
+
 ## Workspaces
 
 ### Create Workspace
@@ -317,7 +351,8 @@ Optional query:
 Body:
 ```json
 {
-  "content": "Hello!"
+  "content": "Hello!",
+  "attachment_ids": ["65f..."]
 }
 ```
 
@@ -335,3 +370,19 @@ Body:
 ### Delete Message
 
 `DELETE /workspaces/{workspaceId}/channels/{channelId}/messages/{messageId}`
+
+## Attachments (GridFS)
+
+All attachment routes require:
+- `Authorization: Bearer <token>`
+
+### Upload Attachment
+
+`POST /attachments`
+
+Multipart form-data:
+- `file` (required)
+
+### Download Attachment
+
+`GET /attachments/{fileId}`

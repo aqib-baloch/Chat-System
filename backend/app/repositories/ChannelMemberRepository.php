@@ -31,5 +31,24 @@ final class ChannelMemberRepository
         ]);
         return (bool)$doc;
     }
-}
 
+    public function addMember(ObjectId $channelId, ObjectId $userId, ObjectId $addedBy): void
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $this->members->insertOne([
+            'channel_id' => $channelId,
+            'user_id' => $userId,
+            'added_by' => $addedBy,
+            'created_at' => new \MongoDB\BSON\UTCDateTime($now),
+        ]);
+    }
+
+    public function removeMember(ObjectId $channelId, ObjectId $userId): bool
+    {
+        $result = $this->members->deleteOne([
+            'channel_id' => $channelId,
+            'user_id' => $userId,
+        ]);
+        return $result->getDeletedCount() > 0;
+    }
+}

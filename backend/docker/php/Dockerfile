@@ -11,4 +11,6 @@ RUN pecl install mongodb \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+COPY ./uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 WORKDIR /var/www

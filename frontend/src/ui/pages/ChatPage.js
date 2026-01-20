@@ -69,7 +69,10 @@ export class ChatPage {
       channel: this.selectedChannel,
       messages: this.messages,
       currentUserId: this.options.user?.id || null,
-      onSend: (text) => this.sendMessage(text),
+      onSend: (payload) => this.sendMessage(payload),
+      onUpdate: (messageId, patch) => this.updateMessage(messageId, patch),
+      onDelete: (messageId) => this.deleteMessage(messageId),
+      onManageMembers: () => this.openManageChannelMembersModal(),
     });
 
     const layout = new ChatLayout({
@@ -177,6 +180,151 @@ export class ChatPage {
     } catch (e) {
       showError(e.response?.data?.error || "Failed to send message");
     }
+  }
+
+  async updateMessage(messageId, patch) {
+    if (!this.selectedWorkspace || !this.selectedChannel) return;
+
+    showLoading("Updating message...");
+    try {
+      const result = await messagesApi.update(
+        this.selectedWorkspace.id,
+        this.selectedChannel.id,
+        messageId,
+        patch.content
+      );
+      const updated = result.data;
+      if (updated) {
+        this.messages = this.messages.map((m) => (m.id === updated.id ? updated : m));
+        state.setMessages(this.messages);
+        this.updateUI();
+      }
+    } catch (e) {
+      showError(e.response?.data?.error || "Failed to update message");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async deleteMessage(messageId) {
+    if (!this.selectedWorkspace || !this.selectedChannel) return;
+
+    showLoading("Deleting message...");
+    try {
+      await messagesApi.delete(
+        this.selectedWorkspace.id,
+        this.selectedChannel.id,
+        messageId
+      );
+      this.messages = this.messages.filter((m) => m.id !== messageId);
+      state.setMessages(this.messages);
+      this.updateUI();
+    } catch (e) {
+      showError(e.response?.data?.error || "Failed to delete message");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  openManageChannelMembersModal() {
+    if (!this.selectedWorkspace || !this.selectedChannel) return;
+
+    const isPrivate = this.selectedChannel.visibility === "private";
+    const isCreator = this.selectedChannel.created_by === this.options.user?.id;
+    if (!isPrivate || !isCreator) {
+      showError("Only the channel creator can manage members");
+      return;
+    }
+
+    const userIdInput = new Input({
+      label: "User ID",
+      placeholder: "Mongo ObjectId (24 hex chars)",
+      required: true,
+    });
+
+    const form = createElement("form", { className: "space-y-4" });
+    form.appendChild(userIdInput.getElement());
+
+    const footer = createElement("div", {
+      className: "flex items-center justify-end gap-3",
+    });
+
+    const modal = new Modal({
+      title: "Channel members",
+      content: form,
+      footer,
+    });
+
+    const closeBtn = new Button({
+      text: "Close",
+      variant: "secondary",
+      onClick: () => modal.close(),
+    });
+
+    const removeBtn = new Button({
+      text: "Remove",
+      variant: "secondary",
+      onClick: async () => {
+        const userId = userIdInput.getValue().trim();
+        if (!userId) {
+          showError("User ID is required");
+          return;
+        }
+        const ok = window.confirm("Remove this user from the channel?");
+        if (!ok) return;
+        showLoading("Removing member...");
+        try {
+          await channelsApi.removeMember(
+            this.selectedWorkspace.id,
+            this.selectedChannel.id,
+            userId
+          );
+          showSuccess("Member removed");
+          modal.close();
+        } catch (e) {
+          showError(e.response?.data?.error || "Failed to remove member");
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+
+    const addBtn = new Button({
+      text: "Add",
+      variant: "primary",
+      onClick: async () => {
+        const userId = userIdInput.getValue().trim();
+        if (!userId) {
+          showError("User ID is required");
+          return;
+        }
+        showLoading("Adding member...");
+        try {
+          await channelsApi.addMember(
+            this.selectedWorkspace.id,
+            this.selectedChannel.id,
+            userId
+          );
+          showSuccess("Member added");
+          modal.close();
+        } catch (e) {
+          showError(e.response?.data?.error || "Failed to add member");
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+
+    footer.appendChild(closeBtn.getElement());
+    footer.appendChild(removeBtn.getElement());
+    footer.appendChild(addBtn.getElement());
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      addBtn.getElement().click();
+    });
+
+    modal.show();
   }
 
   updateUI() {

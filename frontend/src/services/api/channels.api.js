@@ -42,4 +42,19 @@ export const channelsApi = {
     );
     return response.data;
   },
+
+  async addMember(workspaceId, channelId, userId) {
+    const response = await axiosClient.post(
+      `/workspaces/${workspaceId}/channels/${channelId}/members`,
+      { user_id: userId }
+    );
+    return response.data;
+  },
+
+  async removeMember(workspaceId, channelId, userId) {
+    const response = await axiosClient.delete(
+      `/workspaces/${workspaceId}/channels/${channelId}/members/${userId}`
+    );
+    return response.data;
+  },
 };

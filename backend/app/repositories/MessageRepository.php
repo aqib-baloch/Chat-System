@@ -70,6 +70,7 @@ final class MessageRepository
             $message->getChannelId(),
             $message->getSenderId(),
             $message->getContent(),
+            $message->getAttachmentIds(),
             $message->getCreatedAt(),
             $message->getUpdatedAt(),
             $message->getDeletedAt()
@@ -94,4 +95,3 @@ final class MessageRepository
         return $result->getModifiedCount() > 0;
     }
 }
-

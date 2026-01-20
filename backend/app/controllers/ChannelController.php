@@ -173,4 +173,32 @@ final class ChannelController
             throw new HttpException(500, 'Failed to delete channel');
         }
     }
+
+    public function addMember(ObjectId $userId, string $workspaceId, string $channelId, array $body): void
+    {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
+        $channelObjectId = Validator::objectId($channelId, 'channel_id');
+        $memberUserId = Validator::objectId(Validator::requireString($body, 'user_id'), 'user_id');
+
+        $this->channelService->addMember($workspaceObjectId, $channelObjectId, $userId, $memberUserId);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Member added successfully',
+        ], 200);
+    }
+
+    public function removeMember(ObjectId $userId, string $workspaceId, string $channelId, string $memberUserId): void
+    {
+        $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
+        $channelObjectId = Validator::objectId($channelId, 'channel_id');
+        $memberObjectId = Validator::objectId($memberUserId, 'user_id');
+
+        $this->channelService->removeMember($workspaceObjectId, $channelObjectId, $userId, $memberObjectId);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Member removed successfully',
+        ], 200);
+    }
 }

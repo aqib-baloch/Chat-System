@@ -216,4 +216,53 @@ final class ChannelService
             'can_post' => $canPost,
         ];
     }
+
+    public function addMember(ObjectId $workspaceId, ObjectId $channelId, ObjectId $actorId, ObjectId $memberUserId): void
+    {
+        $channel = $this->channelRepo->findById($channelId);
+        if (!$channel || (string)$channel->getWorkspaceId() !== (string)$workspaceId) {
+            throw new HttpException(404, 'Channel not found');
+        }
+
+        if (!$this->channelRepo->canUserModifyChannel($actorId, $channelId)) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        $user = $this->userRepo->findById($memberUserId);
+        if (!$user) {
+            throw new HttpException(404, 'User not found');
+        }
+
+        if ($this->channelMemberRepo->isMember($channelId, $memberUserId)) {
+            return;
+        }
+
+        try {
+            $this->channelMemberRepo->addMember($channelId, $memberUserId, $actorId);
+        } catch (BulkWriteException $e) {
+            $message = $e->getMessage();
+            if (str_contains($message, 'E11000')) {
+                return;
+            }
+            throw $e;
+        }
+    }
+
+    public function removeMember(ObjectId $workspaceId, ObjectId $channelId, ObjectId $actorId, ObjectId $memberUserId): void
+    {
+        $channel = $this->channelRepo->findById($channelId);
+        if (!$channel || (string)$channel->getWorkspaceId() !== (string)$workspaceId) {
+            throw new HttpException(404, 'Channel not found');
+        }
+
+        if (!$this->channelRepo->canUserModifyChannel($actorId, $channelId)) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        if ((string)$channel->getCreatedBy() === (string)$memberUserId) {
+            throw new HttpException(409, 'Cannot remove channel creator');
+        }
+
+        $this->channelMemberRepo->removeMember($channelId, $memberUserId);
+    }
 }

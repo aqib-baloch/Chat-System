@@ -28,15 +28,22 @@ final class Request
 
     public static function jsonBody(): array
     {
+        $contentType = self::header('Content-Type');
+        $isJson = is_string($contentType) && stripos($contentType, 'application/json') !== false;
+
         $raw = file_get_contents('php://input');
         if ($raw === false || trim($raw) === '') {
             return [];
         }
 
+        if (!$isJson) {
+            return [];
+        }
+
         $data = json_decode($raw, true);
         if (!is_array($data)) {
-        throw new HttpException(400, 'Invalid JSON body');
-    }
+            throw new HttpException(400, 'Invalid JSON body');
+        }
 
         return $data;
     }

@@ -9,10 +9,15 @@ export const messagesApi = {
     return response.data;
   },
 
-  async send(workspaceId, channelId, content) {
+  async send(workspaceId, channelId, contentOrPayload) {
+    const payload =
+      typeof contentOrPayload === "string"
+        ? { content: contentOrPayload }
+        : contentOrPayload || {};
+
     const response = await axiosClient.post(
       `/workspaces/${workspaceId}/channels/${channelId}/messages`,
-      { content }
+      payload
     );
     return response.data;
   },

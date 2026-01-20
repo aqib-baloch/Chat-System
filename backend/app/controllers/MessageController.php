@@ -32,6 +32,7 @@ final class MessageController
                 'channel_id' => (string)$message->getChannelId(),
                 'sender_id' => (string)$message->getSenderId(),
                 'content' => $message->getContent(),
+                'attachment_ids' => array_map(fn ($id) => (string)$id, $message->getAttachmentIds()),
                 'created_at' => $message->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $message->getUpdatedAt()?->format(DATE_ATOM),
             ];
@@ -47,9 +48,32 @@ final class MessageController
     {
         $workspaceObjectId = Validator::objectId($workspaceId, 'workspace_id');
         $channelObjectId = Validator::objectId($channelId, 'channel_id');
-        $content = Validator::messageContent(Validator::requireString($body, 'content'));
 
-        $message = $this->messageService->sendMessage($workspaceObjectId, $channelObjectId, $userId, $content);
+        $attachmentIds = [];
+        $raw = $body['attachment_ids'] ?? [];
+        if ($raw !== null && $raw !== []) {
+            if (!is_array($raw)) {
+                throw new \App\Exceptions\HttpException(422, 'Invalid field: attachment_ids');
+            }
+            foreach ($raw as $item) {
+                if (!is_string($item)) {
+                    throw new \App\Exceptions\HttpException(422, 'Invalid field: attachment_ids');
+                }
+                $attachmentIds[] = Validator::objectId($item, 'attachment_id');
+            }
+        }
+
+        $contentRaw = Validator::optionalString($body, 'content', '');
+        $content = $contentRaw !== '' ? Validator::messageContent($contentRaw) : '';
+
+        if ($content === '' && $attachmentIds === []) {
+            // Keep the original validation behavior when no attachments are provided.
+            Validator::messageContent($content);
+        }
+
+        $message = $attachmentIds !== []
+            ? $this->messageService->sendMessageWithAttachments($workspaceObjectId, $channelObjectId, $userId, $content, $attachmentIds)
+            : $this->messageService->sendMessage($workspaceObjectId, $channelObjectId, $userId, $content);
 
         Response::json([
             'success' => true,
@@ -60,6 +84,7 @@ final class MessageController
                 'channel_id' => (string)$message->getChannelId(),
                 'sender_id' => (string)$message->getSenderId(),
                 'content' => $message->getContent(),
+                'attachment_ids' => array_map(fn ($id) => (string)$id, $message->getAttachmentIds()),
                 'created_at' => $message->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $message->getUpdatedAt()?->format(DATE_ATOM),
             ],
@@ -84,6 +109,7 @@ final class MessageController
                 'channel_id' => (string)$message->getChannelId(),
                 'sender_id' => (string)$message->getSenderId(),
                 'content' => $message->getContent(),
+                'attachment_ids' => array_map(fn ($id) => (string)$id, $message->getAttachmentIds()),
                 'created_at' => $message->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $message->getUpdatedAt()?->format(DATE_ATOM),
             ],
@@ -107,6 +133,7 @@ final class MessageController
                 'channel_id' => (string)$message->getChannelId(),
                 'sender_id' => (string)$message->getSenderId(),
                 'content' => $message->getContent(),
+                'attachment_ids' => array_map(fn ($id) => (string)$id, $message->getAttachmentIds()),
                 'created_at' => $message->getCreatedAt()->format(DATE_ATOM),
                 'updated_at' => $message->getUpdatedAt()?->format(DATE_ATOM),
                 'deleted' => $message->isDeleted(),

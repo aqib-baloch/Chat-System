@@ -13,6 +13,8 @@ final class Message
     private ObjectId $channelId;
     private ObjectId $senderId;
     private string $content;
+    /** @var ObjectId[] */
+    private array $attachmentIds;
     private \DateTime $createdAt;
     private ?\DateTime $updatedAt;
     private ?\DateTime $deletedAt;
@@ -23,6 +25,7 @@ final class Message
         ObjectId $channelId,
         ObjectId $senderId,
         string $content,
+        array $attachmentIds,
         \DateTime $createdAt,
         ?\DateTime $updatedAt = null,
         ?\DateTime $deletedAt = null
@@ -32,12 +35,16 @@ final class Message
         $this->channelId = $channelId;
         $this->senderId = $senderId;
         $this->content = $content;
+        $this->attachmentIds = $attachmentIds;
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
         $this->deletedAt = $deletedAt;
     }
 
-    public static function createNew(ObjectId $workspaceId, ObjectId $channelId, ObjectId $senderId, string $content): self
+    /**
+     * @param ObjectId[] $attachmentIds
+     */
+    public static function createNew(ObjectId $workspaceId, ObjectId $channelId, ObjectId $senderId, string $content, array $attachmentIds = []): self
     {
         return new self(
             null,
@@ -45,6 +52,7 @@ final class Message
             $channelId,
             $senderId,
             $content,
+            $attachmentIds,
             new \DateTime('now', new \DateTimeZone('UTC')),
             null,
             null
@@ -74,6 +82,14 @@ final class Message
     public function getContent(): string
     {
         return $this->content;
+    }
+
+    /**
+     * @return ObjectId[]
+     */
+    public function getAttachmentIds(): array
+    {
+        return $this->attachmentIds;
     }
 
     public function getCreatedAt(): \DateTime
@@ -114,6 +130,7 @@ final class Message
             'channel_id' => $this->channelId,
             'sender_id' => $this->senderId,
             'content' => $this->content,
+            'attachment_ids' => $this->attachmentIds,
             'created_at' => new UTCDateTime($this->createdAt),
             'updated_at' => $this->updatedAt ? new UTCDateTime($this->updatedAt) : null,
             'deleted_at' => $this->deletedAt ? new UTCDateTime($this->deletedAt) : null,
@@ -155,16 +172,26 @@ final class Message
             $deletedAt = null;
         }
 
+        $attachmentIds = [];
+        $rawAttachmentIds = $data['attachment_ids'] ?? [];
+        if (is_array($rawAttachmentIds)) {
+            foreach ($rawAttachmentIds as $item) {
+                if ($item instanceof ObjectId) {
+                    $attachmentIds[] = $item;
+                }
+            }
+        }
+
         return new self(
             $data['_id'] ?? null,
             $data['workspace_id'],
             $data['channel_id'],
             $data['sender_id'],
             (string)($data['content'] ?? ''),
+            $attachmentIds,
             $createdAt,
             $updatedAt,
             $deletedAt
         );
     }
 }
-

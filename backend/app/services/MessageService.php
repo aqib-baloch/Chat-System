@@ -55,6 +55,29 @@ final class MessageService
         return $this->messageRepo->create($message);
     }
 
+    /**
+     * @param ObjectId[] $attachmentIds
+     */
+    public function sendMessageWithAttachments(
+        ObjectId $workspaceId,
+        ObjectId $channelId,
+        ObjectId $userId,
+        string $content,
+        array $attachmentIds
+    ): Message {
+        $channel = $this->channelRepo->findById($channelId);
+        if (!$channel || (string)$channel->getWorkspaceId() !== (string)$workspaceId) {
+            throw new HttpException(404, 'Channel not found');
+        }
+
+        if (!$this->canUserPostChannel($channelId, $channel->isPublic(), $channel->getCreatedBy(), $userId)) {
+            throw new HttpException(403, 'Forbidden');
+        }
+
+        $message = Message::createNew($workspaceId, $channelId, $userId, $content, $attachmentIds);
+        return $this->messageRepo->create($message);
+    }
+
     public function editMessage(
         ObjectId $workspaceId,
         ObjectId $channelId,
@@ -144,4 +167,3 @@ final class MessageService
         return $this->canUserReadChannel($channelId, $isPublic, $createdBy, $userId);
     }
 }
-
