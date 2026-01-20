@@ -33,4 +33,3 @@ final class Database
         return $this->db;
     }
 }
-

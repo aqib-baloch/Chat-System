@@ -104,6 +104,81 @@ Success `200`:
 Errors:
 - `401` Unauthorized (missing/invalid/expired token)
 
+### Forgot Password
+
+`POST /forgotPassword`
+
+Body:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+Success `200`:
+```json
+{
+  "success": true,
+  "message": "If the email exists, a reset link has been sent"
+}
+```
+
+Notes:
+- The response is always `200` to avoid user enumeration.
+- Configure SMTP via `.env` (see `.env.example`) so the email can be delivered (Mailtrap).
+- The reset link uses `FRONTEND_URL` + `FRONTEND_RESET_PASSWORD_PATH` (default is hash-based `/#/reset-password`).
+
+### Reset Password
+
+`POST /resetPassword`
+
+Body:
+```json
+{
+  "token": "....",
+  "password": "NewStrongPass123"
+}
+```
+
+Success `200`:
+```json
+{
+  "success": true,
+  "message": "Password reset successfully"
+}
+```
+
+Errors:
+- `400` Invalid or expired token
+- `422` Validation error
+
+### Change Password
+
+`POST /changePassword`
+
+Headers:
+- `Authorization: Bearer <token>`
+
+Body:
+```json
+{
+  "current_password": "StrongPass123",
+  "new_password": "NewStrongPass123"
+}
+```
+
+Success `200`:
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+Errors:
+- `401` Unauthorized / invalid credentials
+- `422` Validation error
+
 ## Channels
 
 Channels are scoped under a workspace.

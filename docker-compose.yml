@@ -5,7 +5,18 @@ services:
     build: ./docker/php
     container_name: chat_app
     environment:
-      APP_DEBUG: "1"
+      APP_DEBUG: ${APP_DEBUG:-1}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DB: ${MONGO_DB:-chat_system}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_RESET_PASSWORD_PATH: ${FRONTEND_RESET_PASSWORD_PATH:-/#/reset-password}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_ENCRYPTION: ${SMTP_ENCRYPTION:-starttls}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-no-reply@example.com}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Chat System}
     volumes:
       - ./:/var/www
     working_dir: /var/www

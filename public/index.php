@@ -8,6 +8,7 @@ use App\Controllers\ChannelController;
 use App\Controllers\MessageController;
 use App\Controllers\WorkspaceController;
 use App\Core\Database;
+use App\Core\SmtpMailer;
 use App\Exceptions\HttpException;
 use App\Http\Request;
 use App\Http\Response;
@@ -17,6 +18,7 @@ use App\Repositories\AuthTokenRepository;
 use App\Repositories\ChannelMemberRepository;
 use App\Repositories\ChannelRepository;
 use App\Repositories\MessageRepository;
+use App\Repositories\PasswordResetRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WorkspaceRepository;
 use App\Services\AuthService;
@@ -30,7 +32,11 @@ try {
     $userRepo = new UserRepository($db);
     $userRepo->ensureIndexes();
     $tokenRepo = new AuthTokenRepository();
-    $authService = new AuthService($userRepo, $tokenRepo);
+    $tokenRepo->ensureIndexes();
+    $passwordResetRepo = new PasswordResetRepository($db);
+    $passwordResetRepo->ensureIndexes();
+    $mailer = SmtpMailer::fromEnv();
+    $authService = new AuthService($userRepo, $tokenRepo, $passwordResetRepo, $mailer);
     $authController = new AuthController($authService);
 
     $workspaceRepo = new WorkspaceRepository($db);
@@ -60,6 +66,8 @@ try {
     // Auth routes
     $router->post('register', fn () => $authController->register($body));
     $router->post('login', fn () => $authController->login($body));
+    $router->post('forgotPassword', fn () => $authController->forgotPassword($body));
+    $router->post('resetPassword', fn () => $authController->resetPassword($body));
 
     $router->post('logout', function () use ($authController): void {
         $token = Request::bearerToken();
@@ -76,6 +84,10 @@ try {
         }
         $authController->getUser($token);
     });
+
+    $router->post('changePassword', $authMiddleware->handle(function ($userId) use ($authController, $body): void {
+        $authController->changePassword($userId, $body);
+    }));
 
     // Workspace routes
     $router->post('workspaces', $authMiddleware->handle(fn ($userId) => $workspaceController->create($userId, $body)));

@@ -7,6 +7,7 @@ import {
   hideLoading,
 } from "../../utils/notify.js";
 import { authApi } from "../../services/api/auth.api.js";
+import { ROUTES } from "../../config/constants.js";
 import { Button } from "../components/Button.js";
 import { Input } from "../components/Input.js";
 
@@ -78,6 +79,21 @@ export class LoginPage {
     });
     this.passwordInput = passwordInput;
     form.appendChild(passwordInput.getElement());
+
+    const forgotLink = createElement("div", {
+      className: "flex items-center justify-end",
+    });
+    forgotLink.appendChild(
+      createElement(
+        "a",
+        {
+          href: ROUTES.FORGOT_PASSWORD,
+          className: "text-sm font-medium text-primary-600 hover:text-primary-500",
+        },
+        "Forgot password?"
+      )
+    );
+    form.appendChild(forgotLink);
 
     const submitButton = new Button({
       text: "Sign in",

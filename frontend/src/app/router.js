@@ -21,7 +21,10 @@ export class Router {
   }
 
   handleRoute() {
-    const hash = window.location.hash || "#/login";
+    const fullHash = window.location.hash || "#/login";
+    const qPos = fullHash.indexOf("?");
+    const hash = qPos === -1 ? fullHash : fullHash.slice(0, qPos);
+    const queryString = qPos === -1 ? "" : fullHash.slice(qPos + 1);
     const route = this.routes.get(hash);
 
     if (!route) {
@@ -40,6 +43,7 @@ export class Router {
       const mergedOptions = {
         ...(baseOptions || {}),
         ...(this.nextState || {}),
+        query: Object.fromEntries(new URLSearchParams(queryString).entries()),
       };
       this.nextState = null;
 

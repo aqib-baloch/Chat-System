@@ -54,4 +54,15 @@ final class UserRepository
         }
         return $created;
     }
+
+    public function updatePasswordHash(ObjectId $id, string $passwordHash): void
+    {
+        $result = $this->users->updateOne(
+            ['_id' => $id],
+            ['$set' => ['password' => $passwordHash]]
+        );
+        if ($result->getMatchedCount() < 1) {
+            throw new \RuntimeException('User not found');
+        }
+    }
 }

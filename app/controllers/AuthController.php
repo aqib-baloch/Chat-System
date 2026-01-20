@@ -7,6 +7,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Services\AuthService;
 use App\Validation\Validator;
+use MongoDB\BSON\ObjectId;
 
 final class AuthController
 {
@@ -67,5 +68,41 @@ final class AuthController
             ],
         ], 200);
     }
-}
 
+    public function forgotPassword(array $body): void
+    {
+        $email = Validator::email(Validator::requireString($body, 'email'));
+        $this->authService->requestPasswordReset($email, Request::ip(), Request::userAgent());
+
+        Response::json([
+            'success' => true,
+            'message' => 'If the email exists, a reset link has been sent',
+        ], 200);
+    }
+
+    public function resetPassword(array $body): void
+    {
+        $token = Validator::requireString($body, 'token');
+        $newPassword = Validator::password(Validator::requireString($body, 'password'));
+
+        $this->authService->resetPassword($token, $newPassword);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Password reset successfully',
+        ], 200);
+    }
+
+    public function changePassword(ObjectId $userId, array $body): void
+    {
+        $currentPassword = Validator::requireString($body, 'current_password');
+        $newPassword = Validator::password(Validator::requireString($body, 'new_password'));
+
+        $this->authService->changePassword($userId, $currentPassword, $newPassword);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Password changed successfully',
+        ], 200);
+    }
+}

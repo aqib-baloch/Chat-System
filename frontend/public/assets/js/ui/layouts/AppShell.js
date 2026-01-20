@@ -1,4 +1,5 @@
 import { createElement } from "../../utils/dom.js";
+import { ROUTES } from "../../config/constants.js";
 
 export class AppShell {
   constructor(options = {}) {
@@ -76,6 +77,16 @@ export class AppShell {
       userInfo.appendChild(userDetails);
 
       userMenu.appendChild(userInfo);
+
+      const changePasswordLink = createElement(
+        "a",
+        {
+          href: ROUTES.CHANGE_PASSWORD,
+          className: "btn btn-secondary text-sm",
+        },
+        "Change password"
+      );
+      userMenu.appendChild(changePasswordLink);
 
       const logoutBtn = createElement(
         "button",
