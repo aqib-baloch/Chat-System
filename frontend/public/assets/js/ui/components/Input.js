@@ -1,8 +1,5 @@
 import { createElement } from "../../utils/dom.js";
 
-/**
- * Input component
- */
 export class Input {
   constructor(options = {}) {
     this.element = null;
@@ -27,7 +24,6 @@ export class Input {
   render() {
     const container = createElement("div", { className: "mb-4" });
 
-    // Label
     if (this.options.label) {
       const label = createElement(
         "label",
@@ -40,10 +36,8 @@ export class Input {
       container.appendChild(label);
     }
 
-    // Input wrapper
     const inputWrapper = createElement("div", { className: "relative" });
 
-    // Input element
     const inputClasses = [
       "input-field",
       this.options.error
@@ -64,7 +58,6 @@ export class Input {
     });
     this.element.value = this.options.value ?? "";
 
-    // Event listeners
     if (this.options.onChange) {
       this.element.addEventListener("input", (e) => {
         this.options.value = e.target.value;
@@ -80,7 +73,6 @@ export class Input {
     inputWrapper.appendChild(this.element);
     container.appendChild(inputWrapper);
 
-    // Error message
     if (this.options.error) {
       const errorElement = createElement(
         "p",
@@ -96,30 +88,23 @@ export class Input {
     return container;
   }
 
-  /**
-   * Update input properties
-   */
   update(options) {
     const wasFocused = document.activeElement === this.element;
     const selectionStart = this.element?.selectionStart ?? null;
     const selectionEnd = this.element?.selectionEnd ?? null;
 
-    // Update options
     this.options = { ...this.options, ...options };
 
-    // Update input element properties
     if (this.element) {
       this.element.type = this.options.type;
       this.element.placeholder = this.options.placeholder;
       this.element.required = this.options.required;
       this.element.disabled = this.options.disabled;
 
-      // Update value if provided
       if (options.value !== undefined) {
         this.element.value = options.value;
       }
 
-      // Update classes
       const inputClasses = [
         "input-field",
         this.options.error
@@ -132,13 +117,11 @@ export class Input {
       this.element.className = inputClasses;
     }
 
-    // Update label if it exists
     const label = this.container.querySelector("label");
     if (label && this.options.label) {
       label.textContent = this.options.label;
     }
 
-    // Update or create error message
     let errorElement = this.container.querySelector(".text-red-600");
     if (this.options.error) {
       if (!errorElement) {
@@ -157,58 +140,37 @@ export class Input {
       errorElement.remove();
     }
 
-    // Restore focus and selection if needed
     if (wasFocused && this.element) {
       this.element.focus();
       if (selectionStart !== null && selectionEnd !== null) {
         try {
           this.element.setSelectionRange(selectionStart, selectionEnd);
-        } catch {
-          // Ignore for input types that don't support selection.
-        }
+        } catch {}
       }
     }
   }
 
-  /**
-   * Get the input container element
-   */
   getElement() {
     return this.container;
   }
 
-  /**
-   * Get the input value
-   */
   getValue() {
     return this.element.value;
   }
 
-  /**
-   * Set the input value
-   */
   setValue(value) {
     this.element.value = value;
     this.options.value = value;
   }
 
-  /**
-   * Set error message
-   */
   setError(error) {
     this.update({ error });
   }
 
-  /**
-   * Clear error message
-   */
   clearError() {
     this.update({ error: "" });
   }
 
-  /**
-   * Focus the input
-   */
   focus() {
     this.element.focus();
   }

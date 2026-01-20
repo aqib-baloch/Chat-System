@@ -11,29 +11,15 @@ export class Router {
     window.addEventListener("load", () => this.handleRoute());
   }
 
-  /**
-   * Register a route
-   * @param {string} path - Route path (e.g., '#/login')
-   * @param {Function} pageConstructor - Page component constructor
-   * @param {Object} options - Additional options
-   */
   addRoute(path, pageConstructor, options = {}) {
     this.routes.set(path, { pageConstructor, options });
   }
 
-  /**
-   * Navigate to a route
-   * @param {string} path - Route path
-   * @param {Object} state - State to pass to the page
-   */
   navigate(path, state = {}) {
     this.nextState = state;
     window.location.hash = path;
   }
 
-  /**
-   * Handle route changes
-   */
   handleRoute() {
     const fullHash = window.location.hash || "#/login";
     const qPos = fullHash.indexOf("?");
@@ -47,12 +33,10 @@ export class Router {
       return;
     }
 
-    // Clean up current page
     if (this.currentPage && typeof this.currentPage.destroy === "function") {
       this.currentPage.destroy();
     }
 
-    // Create new page
     try {
       const baseOptions =
         typeof route.options === "function" ? route.options() : route.options;
@@ -66,7 +50,6 @@ export class Router {
       this.currentPage = new route.pageConstructor(mergedOptions);
       this.currentRoute = hash;
 
-      // Render page
       const appElement = document.getElementById("app");
       if (appElement) {
         appElement.innerHTML = "";

@@ -1,12 +1,5 @@
-/**
- * Notification and toast utilities
- */
-
 let toastContainer = null;
 
-/**
- * Initialize toast container
- */
 const initToastContainer = () => {
   if (toastContainer) return;
 
@@ -16,12 +9,6 @@ const initToastContainer = () => {
   document.body.appendChild(toastContainer);
 };
 
-/**
- * Show toast notification
- * @param {string} message
- * @param {string} type - 'success', 'error', 'warning', 'info'
- * @param {number} duration - Duration in milliseconds
- */
 export const showToast = (message, type = "info", duration = 3000) => {
   initToastContainer();
 
@@ -41,7 +28,6 @@ export const showToast = (message, type = "info", duration = 3000) => {
 
   toastContainer.appendChild(toast);
 
-  // Auto remove after duration
   if (duration > 0) {
     setTimeout(() => {
       if (toast.parentElement) {
@@ -53,11 +39,6 @@ export const showToast = (message, type = "info", duration = 3000) => {
   return toast;
 };
 
-/**
- * Get toast CSS classes based on type
- * @param {string} type
- * @returns {string}
- */
 const getToastClasses = (type) => {
   const baseClasses = "text-white";
 
@@ -74,47 +55,22 @@ const getToastClasses = (type) => {
   }
 };
 
-/**
- * Show success toast
- * @param {string} message
- * @param {number} duration
- */
 export const showSuccess = (message, duration) => {
   return showToast(message, "success", duration);
 };
 
-/**
- * Show error toast
- * @param {string} message
- * @param {number} duration
- */
 export const showError = (message, duration) => {
   return showToast(message, "error", duration);
 };
 
-/**
- * Show warning toast
- * @param {string} message
- * @param {number} duration
- */
 export const showWarning = (message, duration) => {
   return showToast(message, "warning", duration);
 };
 
-/**
- * Show info toast
- * @param {string} message
- * @param {number} duration
- */
 export const showInfo = (message, duration) => {
   return showToast(message, "info", duration);
 };
 
-/**
- * Show loading indicator
- * @param {string} message
- * @returns {Element} Loading element
- */
 export const showLoading = (message = "Loading...") => {
   const loading = document.createElement("div");
   loading.className =
@@ -132,9 +88,6 @@ export const showLoading = (message = "Loading...") => {
   return loading;
 };
 
-/**
- * Hide loading indicator
- */
 export const hideLoading = () => {
   const loading = document.getElementById("loading-overlay");
   if (loading) {
